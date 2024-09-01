@@ -4,9 +4,8 @@
 #include "vmath/internal/intrinsics.h"
 #include "vmath/internal/stdfloat.h"
 #include "vmath/internal/stdint.h"
+#include <assert.h>
 #include <math.h>
-#include <stddef.h>
-#include <string.h>
 
 /// Vector of 2 floats for storage in main memory
 /// (v -> vector, 2f -> two single-precision floats, s -> storage)
@@ -60,14 +59,34 @@ SCALAR_2BATCH_FALLBACK()
 SCALAR_8BATCH_FALLBACK()
 SCALAR_2BATCH_FALLBACK()
 #endif
+#undef SCALAR_2BATCH_FALLBACK
+#undef SCALAR_8BATCH_FALLBACK
+
+/// Load 8 contiguous vec2s from memory
+VMATH_INLINE vm_8batch_v2f_t vm_load_8xv2f(const vm_v2fs_t batch[8]);
+/// Store 8 contiguous vec2s to memory
+VMATH_INLINE void vm_store_8xv2f(vm_v2fs_t output[8],
+								 const vm_8batch_v2f_t* batch);
+/// Load 2 contiguous vec2s from memory
+VMATH_INLINE vm_2batch_v2f_t vm_load_2xv2f(const vm_v2fs_t batch[2]);
+/// Store 2 contiguous vec2s to memory
+VMATH_INLINE void vm_store_2xv2f(vm_v2fs_t output[2],
+								 const vm_2batch_v2f_t* batch);
+/// Add two sets of 8 contiguous vec2s together, componentwise
+VMATH_INLINE vm_8batch_v2f_t vm_add_8xv2f(vm_8batch_v2f_t a, vm_8batch_v2f_t b);
+/// Subtract two sets of 8 contiguous vec2s together, componentwise
+VMATH_INLINE vm_8batch_v2f_t vm_sub_8xv2f(vm_8batch_v2f_t a, vm_8batch_v2f_t b);
+/// Multiply two sets of 8 contiguous vec2s together, componentwise
+VMATH_INLINE vm_8batch_v2f_t vm_mul_8xv2f(vm_8batch_v2f_t a, vm_8batch_v2f_t b);
+/// Divide two sets of 8 contiguous vec2s together, componentwise
+VMATH_INLINE vm_8batch_v2f_t vm_div_8xv2f(vm_8batch_v2f_t a, vm_8batch_v2f_t b);
 
 /*
  * Load / store to and from main memory into SIMD registers (or at least the
  * stack)
  */
 
-/// Load 8 contiguous vec2s from memory
-VMATH_INLINE vm_8batch_v2f_t vm_load_8xv2(const vm_v2fs_t batch[8])
+VMATH_INLINE vm_8batch_v2f_t vm_load_8xv2f(const vm_v2fs_t batch[8])
 {
 #define VMATH_LOAD_8XV2_SCALAR()                                               \
 	vm_8batch_v2f_t result;                                                    \
@@ -79,9 +98,10 @@ VMATH_INLINE vm_8batch_v2f_t vm_load_8xv2(const vm_v2fs_t batch[8])
 #if defined(VMATH_AVX2_ENABLE)
 	return _mm512_load_ps(batch);
 #else
+	assert((void*)&batch->x == (void*)batch);
 	vm_8batch_v2f_t result;
 #pragma unroll
-	for (uint8_t i = 0; i < 4; ++i) {
+	for (int8_t i = 0; i < 4; ++i) {
 		result.buffer[i] = _mm_load_ps(&batch->x);
 	}
 	return result;
@@ -97,21 +117,20 @@ VMATH_INLINE vm_8batch_v2f_t vm_load_8xv2(const vm_v2fs_t batch[8])
 #undef VMATH_LOAD_8XV2_SCALAR
 }
 
-/// Store 8 contiguous vec2s to memory
-VMATH_INLINE void vm_store_8xv2(vm_v2fs_t output[8],
-								const vm_8batch_v2f_t* batch)
+VMATH_INLINE void vm_store_8xv2f(vm_v2fs_t output[8],
+								 const vm_8batch_v2f_t* batch)
 {
-#define VMATH_STORE_8XV2_SCALAR()                                              \
-	memcpy(output, batch, sizeof(vm_8batch_v2f_t));
+#define VMATH_STORE_8XV2_SCALAR() memcpy(output, batch, sizeof(*batch));
 
 #if defined(VMATH_X64_ENABLE)
 #if defined(VMATH_SSE41_ENABLE)
 #if defined(VMATH_AVX2_ENABLE)
 	_mm512_store_ps(output, *batch);
 #else
+	assert((void*)&output->x == (void*)output);
 #pragma unroll
-	for (uint8_t i = 0; i < 4; ++i) {
-		_mm_store_ps(&output[(uint8_t)(i * 2)].x, batch->buffer[i]);
+	for (int8_t i = 0; i < 4; ++i) {
+		_mm_store_ps(&output[(int8_t)(i * 2)].x, batch->buffer[i]);
 	}
 #endif // defined(VMATH_AVX2_ENABLE)
 #else
@@ -125,29 +144,56 @@ VMATH_INLINE void vm_store_8xv2(vm_v2fs_t output[8],
 #undef VMATH_STORE_8XV2_SCALAR
 }
 
+VMATH_INLINE vm_2batch_v2f_t vm_load_2xv2f(const vm_v2fs_t batch[2])
+{
+#define VMATH_LOAD_2XV2_SCALAR()                                               \
+	vm_2batch_v2f_t result;                                                    \
+	memcpy(&result, batch, sizeof(vm_2batch_v2f_t));                           \
+	return result;
+
+#if defined(VMATH_X64_ENABLE)
+#if defined(VMATH_SSE41_ENABLE)
+	assert((void*)&batch->x == (void*)batch);
+	return _mm_load_ps(&batch->x);
+#else
+	VMATH_LOAD_2XV2_SCALAR()
+#endif // defined(VMATH_SSE41_ENABLE)
+#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
+#error ARM SIMD not implemented
+#else
+	VMATH_LOAD_2XV2_SCALAR()
+#endif
+#undef VMATH_LOAD_2XV2_SCALAR
+}
+
+/// Store 2 contiguous vec2s to memory
+VMATH_INLINE void vm_store_2xv2f(vm_v2fs_t output[2],
+								 const vm_2batch_v2f_t* batch)
+{
+#define VMATH_STORE_2XV2_SCALAR() memcpy(output, batch, sizeof(*batch));
+#if defined(VMATH_X64_ENABLE)
+#if defined(VMATH_SSE41_ENABLE)
+	assert((void*)&output->x == (void*)output);
+	_mm_store_ps(&output->x, *batch);
+#else
+	VMATH_STORE_2XV2_SCALAR()
+#endif // defined(VMATH_SSE41_ENABLE)
+#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
+#error ARM SIMD not implemented
+#else
+	VMATH_STORE_2XV2_SCALAR()
+#endif
+#undef VMATH_STORE_2XV2_SCALAR
+}
+
 /*
- * Add / subtract / multiply / divide two vec2, componentwise
+ * Add / subtract / multiply / divide vec2s, componentwise
  */
 
-VMATH_INLINE vm_v2fs_t vm_vec2_f32_add(const vm_v2fs_t a, const vm_v2fs_t b)
-{
-	return (vm_v2fs_t){a.x + b.x, a.y + b.y};
-}
-
-VMATH_INLINE vm_v2fs_t vm_vec2_f32_sub(const vm_v2fs_t a, const vm_v2fs_t b)
-{
-	return (vm_v2fs_t){a.x - b.x, a.y - b.y};
-}
-
-VMATH_INLINE vm_v2fs_t vm_vec2_f32_mul(const vm_v2fs_t a, const vm_v2fs_t b)
-{
-	return (vm_v2fs_t){a.x * b.x, a.y * b.y};
-}
-
-VMATH_INLINE vm_v2fs_t vm_vec2_f32_div(const vm_v2fs_t a, const vm_v2fs_t b)
-{
-	return (vm_v2fs_t){a.x / b.x, a.y / b.y};
-}
+#include "vmath/generated/v2f/8xv2f_componentwise_add.h"
+#include "vmath/generated/v2f/8xv2f_componentwise_div.h"
+#include "vmath/generated/v2f/8xv2f_componentwise_mul.h"
+#include "vmath/generated/v2f/8xv2f_componentwise_sub.h"
 
 /*
  * Add / subtract / multiply / divide with constant

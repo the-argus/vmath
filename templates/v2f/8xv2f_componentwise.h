@@ -1,0 +1,31 @@
+VMATH_INLINE vm_8batch_v2f_t vm_add_8xv2f(const vm_8batch_v2f_t a,
+										  const vm_8batch_v2f_t b)
+{
+#define VMATH_ADD_8XV2_SCALAR()                                                \
+	vm_8batch_v2f_t result;                                                    \
+	for (int8_t i = 0; i < 8; ++i) {                                           \
+		result.buffer[i] = a.buffer[i] SCALAR_OP b.buffer[i];                          \
+	}                                                                          \
+	return result;
+#if defined(VMATH_X64_ENABLE)
+#if defined(VMATH_SSE41_ENABLE)
+#if defined(VMATH_AVX2_ENABLE)
+	return _mm512_add_ps(a, b);
+#else
+	vm_8batch_v2f_t result;
+#pragma unroll
+	for (int8_t i = 0; i < 4; ++i) {
+		result.buffer[i] = _mm_add_ps(a.buffer[i], b.buffer[i]);
+	}
+	return result;
+#endif
+#else
+	VMATH_ADD_8XV2_SCALAR()
+#endif // defined(VMATH_SSE41_ENABLE)
+#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
+#error ARM SIMD not implemented
+#else
+	VMATH_ADD_8XV2_SCALAR()
+#endif
+#undef VMATH_ADD_8XV2_SCALAR
+}

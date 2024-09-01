@@ -63,5 +63,7 @@ pub fn build(b: *std.Build) !void {
         run_tests_step.dependOn(&test_run.step);
     }
 
+    try @import("templates/build.zig").generate(b, "code");
+
     zcc.createStep(b, "cdb", try tests.toOwnedSlice());
 }
