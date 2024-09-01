@@ -1,0 +1,17 @@
+.{
+    .name = "vmath",
+    .version = "0.0.1",
+    .paths = .{
+        "src/",
+        "build.zig",
+        "build.zig.zon",
+        "flake.lock",
+        "flake.nix",
+    },
+    .dependencies = .{
+        .compile_commands = .{
+            .url = "https://github.com/the-argus/zig-compile-commands/archive/697abd2d24dc73fe0ead1849f17c43f18c038bc6.tar.gz",
+            .hash = "12204f3f579b3072cddf75f31514c55b0bd30e09c755dd2389a0aa8bba79b7311be9",
+        },
+    },
+}

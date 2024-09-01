@@ -1,2 +1,3 @@
 # vmath
-my personal vector / SIMD math library, in C for portability
+
+my personal vector / SIMD math library, in C for portability. header-only
