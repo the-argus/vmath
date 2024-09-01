@@ -4,7 +4,7 @@
 /*
  * TODO: dont rely  on float and double here, maybe _Float32 or etc
  */
-typedef float vmath_float32_t;
-typedef double vmath_float64_t;
+typedef float vm_float32_t;
+typedef double vm_float64_t;
 
 #endif
