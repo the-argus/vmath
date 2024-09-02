@@ -72,6 +72,7 @@ VMATH_INLINE vm_2batch_v2f_t vm_load_2xv2f(const vm_v2fs_t batch[2]);
 /// Store 2 contiguous vec2s to memory
 VMATH_INLINE void vm_store_2xv2f(vm_v2fs_t output[2],
 								 const vm_2batch_v2f_t* batch);
+
 /// Add two sets of 8 contiguous vec2s together, componentwise
 VMATH_INLINE vm_8batch_v2f_t vm_add_8xv2f(vm_8batch_v2f_t a, vm_8batch_v2f_t b);
 /// Subtract two sets of 8 contiguous vec2s together, componentwise
@@ -80,6 +81,15 @@ VMATH_INLINE vm_8batch_v2f_t vm_sub_8xv2f(vm_8batch_v2f_t a, vm_8batch_v2f_t b);
 VMATH_INLINE vm_8batch_v2f_t vm_mul_8xv2f(vm_8batch_v2f_t a, vm_8batch_v2f_t b);
 /// Divide two sets of 8 contiguous vec2s together, componentwise
 VMATH_INLINE vm_8batch_v2f_t vm_div_8xv2f(vm_8batch_v2f_t a, vm_8batch_v2f_t b);
+
+/// Add two sets of 2 contiguous vec2s together, componentwise
+VMATH_INLINE vm_2batch_v2f_t vm_add_2xv2f(vm_2batch_v2f_t a, vm_2batch_v2f_t b);
+/// Subtract two sets of 2 contiguous vec2s together, componentwise
+VMATH_INLINE vm_2batch_v2f_t vm_sub_2xv2f(vm_2batch_v2f_t a, vm_2batch_v2f_t b);
+/// Multiply two sets of 2 contiguous vec2s together, componentwise
+VMATH_INLINE vm_2batch_v2f_t vm_mul_2xv2f(vm_2batch_v2f_t a, vm_2batch_v2f_t b);
+/// Divide two sets of28 contiguous vec2s together, componentwise
+VMATH_INLINE vm_2batch_v2f_t vm_div_2xv2f(vm_2batch_v2f_t a, vm_2batch_v2f_t b);
 
 /*
  * Load / store to and from main memory into SIMD registers (or at least the
@@ -194,6 +204,11 @@ VMATH_INLINE void vm_store_2xv2f(vm_v2fs_t output[2],
 #include "vmath/generated/v2f/8xv2f_componentwise_div.h"
 #include "vmath/generated/v2f/8xv2f_componentwise_mul.h"
 #include "vmath/generated/v2f/8xv2f_componentwise_sub.h"
+
+#include "vmath/generated/v2f/2xv2f_componentwise_add.h"
+#include "vmath/generated/v2f/2xv2f_componentwise_div.h"
+#include "vmath/generated/v2f/2xv2f_componentwise_mul.h"
+#include "vmath/generated/v2f/2xv2f_componentwise_sub.h"
 
 /*
  * Add / subtract / multiply / divide with constant
