@@ -24,7 +24,7 @@ VMATH_INLINE vm_8batch_v2f_t vm_mul_8xv2f_constant(const vm_8batch_v2f_t a,
 	return result;
 #if defined(VMATH_X64_ENABLE)
 #if defined(VMATH_SSE41_ENABLE)
-#if defined(VMATH_AVX2_ENABLE)
+#if defined(VMATH_AVX512BW_ENABLE)
 	return _mm512_mul_ps(a, vm_splat_8xv2f(b));
 #else
 	vm_8batch_v2f_t result;

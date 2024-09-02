@@ -36,14 +36,14 @@ typedef __m128 vm_v2f_t;
 typedef __m128 vm_2batch_v2f_t;
 // with avx, use native 8batch
 // for SSE, 8batch needs to be emulated with smaller batches
-#if defined(VMATH_AVX2_ENABLE)
+#if defined(VMATH_AVX512BW_ENABLE)
 typedef __m512 vm_8batch_v2f_t;
 #else
 typedef struct VMATH_ALIGNED(64)
 {
 	__m128 buffer[4];
 } vm_8batch_v2f_t;
-#endif // defined(VMATH_AVX2_ENABLE)
+#endif // defined(VMATH_AVX512BW_ENABLE)
 #else
 // in this case, there is no sse 4.1, emulate it with scalar
 SCALAR_8BATCH_FALLBACK()

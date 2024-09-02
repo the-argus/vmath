@@ -46,7 +46,7 @@ VMATH_INLINE void vm_store_v2f(vm_v2fs_t output[1], const vm_v2f_t vector)
 	assert((void*)&output[0].x == (void*)output);
 	// make sure that output is aligned to double - last 3 bits, or 0b111(7),
 	// are all zero
-	assert(((size_t)output ^ 7UL) == (size_t)output);
+	assert(((size_t)output & 7UL) == 0);
 	// HACK: storing both 32 bit floats as a double. see vm_load_v2f
 	_mm_store_sd((double*)&output->x, vector);
 #else
@@ -69,7 +69,7 @@ VMATH_INLINE vm_8batch_v2f_t vm_load_8xv2f(const vm_v2fs_t batch[8])
 
 #if defined(VMATH_X64_ENABLE)
 #if defined(VMATH_SSE41_ENABLE)
-#if defined(VMATH_AVX2_ENABLE)
+#if defined(VMATH_AVX512BW_ENABLE)
 	return _mm512_load_ps(batch);
 #else
 	assert((void*)&batch->x == (void*)batch);
@@ -79,7 +79,7 @@ VMATH_INLINE vm_8batch_v2f_t vm_load_8xv2f(const vm_v2fs_t batch[8])
 		result.buffer[i] = _mm_load_ps(&batch->x);
 	}
 	return result;
-#endif // defined(VMATH_AVX2_ENABLE)
+#endif // defined(VMATH_AVX512BW_ENABLE)
 #else
 	VMATH_LOAD_8XV2_SCALAR()
 #endif // defined(VMATH_SSE41_ENABLE)
@@ -98,15 +98,15 @@ VMATH_INLINE void vm_store_8xv2f(vm_v2fs_t output[8],
 
 #if defined(VMATH_X64_ENABLE)
 #if defined(VMATH_SSE41_ENABLE)
-#if defined(VMATH_AVX2_ENABLE)
+#if defined(VMATH_AVX512BW_ENABLE)
 	_mm512_store_ps(output, batch);
 #else
 	assert((void*)&output->x == (void*)output);
 #pragma unroll
 	for (int8_t i = 0; i < 4; ++i) {
-		_mm_store_ps(&output[(int8_t)(i * 2)].x, batch->buffer[i]);
+		_mm_store_ps(&output[(int8_t)(i * 2)].x, batch.buffer[i]);
 	}
-#endif // defined(VMATH_AVX2_ENABLE)
+#endif // defined(VMATH_AVX512BW_ENABLE)
 #else
 	VMATH_STORE_8XV2_SCALAR()
 #endif // defined(VMATH_SSE41_ENABLE)
@@ -213,7 +213,7 @@ VMATH_INLINE vm_8batch_v2f_t vm_splat_8xv2f(const vm_float32_t fill)
 
 #if defined(VMATH_X64_ENABLE)
 #if defined(VMATH_SSE41_ENABLE)
-#if defined(VMATH_AVX2_ENABLE)
+#if defined(VMATH_AVX512BW_ENABLE)
 	return _mm512_set1_ps(fill);
 #else
 	vm_8batch_v2f_t result;
@@ -222,7 +222,7 @@ VMATH_INLINE vm_8batch_v2f_t vm_splat_8xv2f(const vm_float32_t fill)
 		result.buffer[i] = _mm_set1_ps(fill);
 	}
 	return result;
-#endif // defined(VMATH_AVX2_ENABLE)
+#endif // defined(VMATH_AVX512BW_ENABLE)
 #else
 	VMATH_SPLAT_8XV2_SCALAR()
 #endif // defined(VMATH_SSE41_ENABLE)

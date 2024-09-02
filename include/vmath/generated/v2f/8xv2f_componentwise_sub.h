@@ -12,7 +12,7 @@ VMATH_INLINE vm_8batch_v2f_t vm_sub_8xv2f(const vm_8batch_v2f_t a,
 	return result;
 #if defined(VMATH_X64_ENABLE)
 #if defined(VMATH_SSE41_ENABLE)
-#if defined(VMATH_AVX2_ENABLE)
+#if defined(VMATH_AVX512BW_ENABLE)
 	return _mm512_sub_ps(a, b);
 #else
 	vm_8batch_v2f_t result;
