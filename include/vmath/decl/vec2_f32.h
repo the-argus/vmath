@@ -71,13 +71,11 @@ VMATH_INLINE void vm_store_v2f(vm_v2fs_t output[1], vm_v2f_t vector);
 /// Load 8 contiguous vec2s from memory
 VMATH_INLINE vm_8batch_v2f_t vm_load_8xv2f(const vm_v2fs_t batch[8]);
 /// Store 8 contiguous vec2s to memory
-VMATH_INLINE void vm_store_8xv2f(vm_v2fs_t output[8],
-								 const vm_8batch_v2f_t* batch);
+VMATH_INLINE void vm_store_8xv2f(vm_v2fs_t output[8], vm_8batch_v2f_t batch);
 /// Load 2 contiguous vec2s from memory
 VMATH_INLINE vm_2batch_v2f_t vm_load_2xv2f(const vm_v2fs_t batch[2]);
 /// Store 2 contiguous vec2s to memory
-VMATH_INLINE void vm_store_2xv2f(vm_v2fs_t output[2],
-								 const vm_2batch_v2f_t* batch);
+VMATH_INLINE void vm_store_2xv2f(vm_v2fs_t output[2], vm_2batch_v2f_t batch);
 
 /// Load a float32 into both elements of a vec2
 VMATH_INLINE vm_v2f_t vm_splat_v2f(vm_float32_t fill);

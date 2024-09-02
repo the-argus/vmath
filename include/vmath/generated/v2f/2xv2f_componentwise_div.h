@@ -5,10 +5,10 @@ VMATH_INLINE vm_2batch_v2f_t vm_div_2xv2f(const vm_2batch_v2f_t a,
 {
 #define VMATH_DIV_2XV2_SCALAR()                                                \
 	vm_2batch_v2f_t result;                                                    \
-	result.buffer[0].x = a.buffer[0].x % b.buffer[0].x;                \
-	result.buffer[0].y = a.buffer[0].y % b.buffer[0].y;                \
-	result.buffer[1].x = a.buffer[1].x % b.buffer[1].x;                \
-	result.buffer[1].y = a.buffer[1].y % b.buffer[1].y;                \
+	result.buffer[0].x = a.buffer[0].x / b.buffer[0].x;                \
+	result.buffer[0].y = a.buffer[0].y / b.buffer[0].y;                \
+	result.buffer[1].x = a.buffer[1].x / b.buffer[1].x;                \
+	result.buffer[1].y = a.buffer[1].y / b.buffer[1].y;                \
 	return result;
 #if defined(VMATH_X64_ENABLE)
 #if defined(VMATH_SSE41_ENABLE)

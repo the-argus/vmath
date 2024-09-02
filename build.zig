@@ -8,7 +8,7 @@ const test_flags = &[_][]const u8{
     "-pedantic",
     "-Wall",
     "-Iinclude/",
-    "-mavx512f",
+    // "-march=x86-64-v3", // x84-64 with AVX simd and stuff
 };
 
 const test_source_files = &[_][]const u8{

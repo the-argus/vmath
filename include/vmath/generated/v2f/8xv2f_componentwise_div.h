@@ -6,8 +6,8 @@ VMATH_INLINE vm_8batch_v2f_t vm_div_8xv2f(const vm_8batch_v2f_t a,
 #define VMATH_DIV_8XV2_SCALAR()                                                \
 	vm_8batch_v2f_t result;                                                    \
 	for (int8_t i = 0; i < 8; ++i) {                                           \
-		result.buffer[i].x = a.buffer[i].x % b.buffer[i].x;            \
-		result.buffer[i].y = a.buffer[i].y % b.buffer[i].y;            \
+		result.buffer[i].x = a.buffer[i].x / b.buffer[i].x;            \
+		result.buffer[i].y = a.buffer[i].y / b.buffer[i].y;            \
 	}                                                                          \
 	return result;
 #if defined(VMATH_X64_ENABLE)

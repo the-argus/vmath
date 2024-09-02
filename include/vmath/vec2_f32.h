@@ -8,6 +8,7 @@
 #include "vmath/decl/vec2_f32.h"
 #include <assert.h>
 #include <math.h>
+#include <string.h>
 
 /*
  * Load / store to and from main memory into SIMD registers (or at least the
@@ -39,7 +40,7 @@ VMATH_INLINE vm_v2f_t vm_load_v2f(const vm_v2fs_t vector[1])
 
 VMATH_INLINE void vm_store_v2f(vm_v2fs_t output[1], const vm_v2f_t vector)
 {
-#define VMATH_STORE_V2_SCALAR() return vector[0];
+#define VMATH_STORE_V2_SCALAR() output[0] = vector;
 #if defined(VMATH_X64_ENABLE)
 #if defined(VMATH_SSE41_ENABLE)
 	assert((void*)&output[0].x == (void*)output);
@@ -91,14 +92,14 @@ VMATH_INLINE vm_8batch_v2f_t vm_load_8xv2f(const vm_v2fs_t batch[8])
 }
 
 VMATH_INLINE void vm_store_8xv2f(vm_v2fs_t output[8],
-								 const vm_8batch_v2f_t* batch)
+								 const vm_8batch_v2f_t batch)
 {
-#define VMATH_STORE_8XV2_SCALAR() memcpy(output, batch, sizeof(*batch));
+#define VMATH_STORE_8XV2_SCALAR() memcpy(output, &batch, sizeof(batch));
 
 #if defined(VMATH_X64_ENABLE)
 #if defined(VMATH_SSE41_ENABLE)
 #if defined(VMATH_AVX2_ENABLE)
-	_mm512_store_ps(output, *batch);
+	_mm512_store_ps(output, batch);
 #else
 	assert((void*)&output->x == (void*)output);
 #pragma unroll
@@ -141,13 +142,13 @@ VMATH_INLINE vm_2batch_v2f_t vm_load_2xv2f(const vm_v2fs_t batch[2])
 
 /// Store 2 contiguous vec2s to memory
 VMATH_INLINE void vm_store_2xv2f(vm_v2fs_t output[2],
-								 const vm_2batch_v2f_t* batch)
+								 const vm_2batch_v2f_t batch)
 {
-#define VMATH_STORE_2XV2_SCALAR() memcpy(output, batch, sizeof(*batch));
+#define VMATH_STORE_2XV2_SCALAR() memcpy(output, &batch, sizeof(batch));
 #if defined(VMATH_X64_ENABLE)
 #if defined(VMATH_SSE41_ENABLE)
 	assert((void*)&output->x == (void*)output);
-	_mm_store_ps(&output->x, *batch);
+	_mm_store_ps(&output->x, batch);
 #else
 	VMATH_STORE_2XV2_SCALAR()
 #endif // defined(VMATH_SSE41_ENABLE)
@@ -410,8 +411,11 @@ VMATH_INLINE vm_v2f_t vm_length_inv_v2f_splat(const vm_v2f_t vec)
 
 VMATH_INLINE vm_v2f_t vm_length_sqr_v2f_splat(const vm_v2f_t vec)
 {
+	// le dot product
 #define VMATH_LENGTH_SQR_V2_SPLAT_SCALAR(argname)                              \
-	return ((argname).x * (argname).x) + ((argname).y * (argname).y);
+	const vm_float32_t value =                                                 \
+		((argname).x * (argname).x) + ((argname).y * (argname).y);             \
+	return (vm_v2f_t){.x = value, .y = value};
 #if defined(VMATH_X64_ENABLE)
 #if defined(VMATH_SSE41_ENABLE)
 	// multiply all components

@@ -3,7 +3,7 @@
 VMATH_INLINE vm_v2f_t vm_div_v2f(const vm_v2f_t a, const vm_v2f_t b)
 {
 #define VMATH_DIV_V2_SCALAR()                                                  \
-	return (vm_v2f_t){.x = a.x % b.x, .y = a.y % b.y};
+	return (vm_v2f_t){.x = a.x / b.x, .y = a.y / b.y};
 #if defined(VMATH_X64_ENABLE)
 #if defined(VMATH_SSE41_ENABLE)
 	return _mm_div_ps(a, b);
