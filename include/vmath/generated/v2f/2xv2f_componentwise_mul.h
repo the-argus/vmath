@@ -1,3 +1,5 @@
+#include "vmath/decl/vec2_f32.h"
+
 VMATH_INLINE vm_2batch_v2f_t vm_mul_2xv2f(const vm_2batch_v2f_t a,
 										  const vm_2batch_v2f_t b)
 {
@@ -12,7 +14,7 @@ VMATH_INLINE vm_2batch_v2f_t vm_mul_2xv2f(const vm_2batch_v2f_t a,
 #if defined(VMATH_SSE41_ENABLE)
 	return _mm_mul_ps(a, b);
 #else
-	VMATH_MUL_8XV2_SCALAR()
+	VMATH_MUL_2XV2_SCALAR()
 #endif // defined(VMATH_SSE41_ENABLE)
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented

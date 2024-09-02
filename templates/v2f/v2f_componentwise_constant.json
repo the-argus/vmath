@@ -1,0 +1,10 @@
+{
+  "file_name_replacement_index": 0,
+  "replacements": ["add", "ADD", "SCALAR_OP"],
+  "sets": [
+    ["add", "ADD", "+"],
+    ["sub", "SUB", "-"],
+    ["mul", "MUL", "*"],
+    ["div", "DIV", "%"]
+  ]
+}

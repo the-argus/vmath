@@ -1,3 +1,5 @@
+#include "vmath/decl/vec2_f32.h"
+
 VMATH_INLINE vm_8batch_v2f_t vm_mul_8xv2f(const vm_8batch_v2f_t a,
 										  const vm_8batch_v2f_t b)
 {
