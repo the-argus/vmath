@@ -98,7 +98,10 @@ START_TEST(load_store_1x_malloc) // NOLINT
 	vm_store_v2f(output_buf + 33, reg33);
 	vm_store_v2f(output_buf + 34, reg34);
 
-	ck_assert_mem_eq(buf, output_buf, sizeof(vm_v2f_t) * num_vectors); // NOLINT
+	for (size_t i = 0; i < num_vectors; ++i) {
+		ck_assert_float_eq(buf[i].x, output_buf[i].x); // NOLINT
+		ck_assert_float_eq(buf[i].y, output_buf[i].y); // NOLINT
+	}
 
 	free(buf);
 	free(output_buf);
@@ -135,6 +138,10 @@ START_TEST(load_store_8x) // NOLINT
 	vm_v2fs_t output[8];
 	vm_8batch_v2f_t reg = vm_load_8xv2f(stored);
 	vm_store_8xv2f(output, reg);
+	for (int8_t i = 0; i < 8; ++i) {
+		ck_assert_float_eq(stored[i].x, output[i].x); // NOLINT
+		ck_assert_float_eq(stored[i].y, output[i].y); // NOLINT
+	}
 	ck_assert_mem_eq(output, stored, sizeof(stored)); // NOLINT
 }
 END_TEST
@@ -142,12 +149,12 @@ END_TEST
 START_TEST(splat_1x) //  NOLINT
 {
 	const float tests[4] = {0.F, -123.645F, 987.30F, 1000000000.0000F};
-	vm_v2f_t output;
+	vm_v2f_t splatted;
 
 	for (size_t i = 0; i < 4; ++i) {
-		output = vm_splat_v2f(tests[i]);
+		splatted = vm_splat_v2f(tests[i]);
 		vm_v2fs_t readable;
-		vm_store_v2f(&readable, output);
+		vm_store_v2f(&readable, splatted);
 		ck_assert_float_eq(tests[i], readable.x); // NOLINT
 		ck_assert_float_eq(tests[i], readable.y); // NOLINT
 	}
@@ -208,11 +215,12 @@ Suite* vector2_f32_suite(void)
 
 	tcase_add_test(vec_1x, load_store_1x);
 	tcase_add_test(vec_1x, load_store_1x_malloc);
-	tcase_add_test(vec_1x, splat_1x);
 	tcase_add_test(vec_2x, load_store_2x);
-	tcase_add_test(vec_1x, splat_2x);
 	tcase_add_test(vec_8x, load_store_8x);
-	tcase_add_test(vec_1x, splat_8x);
+	// splatting tests
+	tcase_add_test(vec_1x, splat_1x);
+	tcase_add_test(vec_2x, splat_2x);
+	tcase_add_test(vec_8x, splat_8x);
 	suite_add_tcase(suite, vec_1x);
 	suite_add_tcase(suite, vec_2x);
 	suite_add_tcase(suite, vec_8x);
