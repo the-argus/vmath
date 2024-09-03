@@ -76,7 +76,7 @@ VMATH_INLINE vm_8batch_v2f_t vm_load_8xv2f(const vm_v2fs_t batch[8])
 	vm_8batch_v2f_t result;
 #pragma unroll
 	for (int8_t i = 0; i < 4; ++i) {
-		result.buffer[i] = _mm_load_ps(&batch->x);
+		result.buffer[i] = _mm_load_ps(&batch[i * 2UL].x);
 	}
 	return result;
 #endif // defined(VMATH_AVX512BW_ENABLE)
@@ -165,7 +165,7 @@ VMATH_INLINE vm_v2f_t vm_splat_v2f(vm_float32_t fill)
 #define VMATH_SPLAT_V2_SCALAR() return (vm_v2f_t){.x = fill, .y = fill};
 #if defined(VMATH_X64_ENABLE)
 #if defined(VMATH_SSE41_ENABLE)
-	return _mm_set_ps(fill, fill, 0, 0);
+	return _mm_set_ps(0, 0, fill, fill);
 #else
 	VMATH_SPLAT_V2_SCALAR()
 #endif // defined(VMATH_SSE41_ENABLE)
