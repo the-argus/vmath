@@ -2,7 +2,7 @@
 #include <check.h>
 #include <stdlib.h>
 
-#define EPSILON 0.00001f;
+#define EPSILON 0.00001F
 
 START_TEST(load_store_1x) // NOLINT
 {
@@ -206,6 +206,94 @@ START_TEST(splat_8x) //  NOLINT
 }
 END_TEST
 
+START_TEST(arithmetic_ops_1x) // NOLINT
+{
+	const vm_v2fs_t initial = {.x = .5F, .y = 3.7F};
+	const vm_v2fs_t op = {.x = 100.F, .y = 312.F};
+
+	vm_v2f_t a = vm_load_v2f(&initial);
+	vm_v2f_t b = vm_load_v2f(&op);
+
+	{
+		vm_v2f_t out = vm_add_v2f(a, b);
+		vm_v2fs_t readable;
+		vm_store_v2f(&readable, out);
+		ck_assert_float_eq_tol(initial.x + op.x, readable.x, EPSILON);
+		ck_assert_float_eq_tol(initial.y + op.y, readable.y, EPSILON);
+	}
+
+	{
+		vm_v2f_t out = vm_sub_v2f(a, b);
+		vm_v2fs_t readable;
+		vm_store_v2f(&readable, out);
+		ck_assert_float_eq_tol(initial.x - op.x, readable.x, EPSILON);
+		ck_assert_float_eq_tol(initial.y - op.y, readable.y, EPSILON);
+	}
+
+	{
+		vm_v2f_t out = vm_mul_v2f(a, b);
+		vm_v2fs_t readable;
+		vm_store_v2f(&readable, out);
+		ck_assert_float_eq_tol(initial.x * op.x, readable.x, EPSILON);
+		ck_assert_float_eq_tol(initial.y * op.y, readable.y, EPSILON);
+	}
+
+	{
+		vm_v2f_t out = vm_div_v2f(a, b);
+		vm_v2fs_t readable;
+		vm_store_v2f(&readable, out);
+		ck_assert_float_eq_tol(initial.x / op.x, readable.x, EPSILON);
+		ck_assert_float_eq_tol(initial.y / op.y, readable.y, EPSILON);
+	}
+}
+END_TEST
+
+START_TEST(arithmetic_ops_2x) // NOLINT
+{
+	const vm_v2fs_t initial[2] = {
+		{.x = .5F, .y = 3.7F},
+		{.x = .8F, .y = 83.2F},
+	};
+	const vm_v2fs_t op[2] = {
+		{.x = 100.F, .y = 312.F},
+		{.x = 13.93F, .y = 92.90F},
+	};
+
+	vm_2batch_v2f_t a = vm_load_2xv2f(initial);
+	vm_2batch_v2f_t b = vm_load_2xv2f(op);
+
+#define ARITHMETIC_OPS_2X_CHECK(batchname, operator)                           \
+	vm_v2fs_t readable[2];                                                     \
+	vm_store_2xv2f(readable, batchname);                                       \
+	for (int i = 0; i < 2; ++i) {                                              \
+		ck_assert_float_eq_tol(initial[i].x operator op[i].x, readable[i].x,   \
+							   EPSILON);                                       \
+		ck_assert_float_eq_tol(initial[i].y operator op[i].y, readable[i].y,   \
+							   EPSILON);                                       \
+	}
+
+	{
+		vm_2batch_v2f_t out = vm_add_2xv2f(a, b);
+		ARITHMETIC_OPS_2X_CHECK(out, +);
+	}
+
+	{
+		vm_2batch_v2f_t out = vm_sub_2xv2f(a, b);
+		ARITHMETIC_OPS_2X_CHECK(out, -);
+	}
+
+	{
+		vm_2batch_v2f_t out = vm_mul_2xv2f(a, b);
+		ARITHMETIC_OPS_2X_CHECK(out, *);
+	}
+
+	{
+		vm_2batch_v2f_t out = vm_div_2xv2f(a, b);
+		ARITHMETIC_OPS_2X_CHECK(out, /);
+	}
+}
+END_TEST
+
 Suite* vector2_f32_suite(void)
 {
 	Suite* const suite = suite_create("Vector2 f32");
@@ -221,6 +309,9 @@ Suite* vector2_f32_suite(void)
 	tcase_add_test(vec_1x, splat_1x);
 	tcase_add_test(vec_2x, splat_2x);
 	tcase_add_test(vec_8x, splat_8x);
+	// arithmetic tests
+	tcase_add_test(vec_1x, arithmetic_ops_1x);
+	tcase_add_test(vec_2x, arithmetic_ops_2x);
 	suite_add_tcase(suite, vec_1x);
 	suite_add_tcase(suite, vec_2x);
 	suite_add_tcase(suite, vec_8x);
