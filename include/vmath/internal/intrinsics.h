@@ -248,4 +248,10 @@
 #endif
 #endif
 
+/// generic AVX512 enable macro, determines if we can use __m512 and other
+/// avx512 intrinsics
+#if defined(VMATH_AVX512BW_ENABLE) || defined(VMATH_AVX512VNNI_ENABLE)
+#define VMATH_AVX512_GENERIC_ENABLE
+#endif
+
 #endif
