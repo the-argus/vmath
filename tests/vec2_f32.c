@@ -214,12 +214,21 @@ START_TEST(arithmetic_ops_1x) // NOLINT
 	vm_v2f_t a = vm_load_v2f(&initial);
 	vm_v2f_t b = vm_load_v2f(&op);
 
+#define ARITHMETIC_OPS_1X_CHECK_CONSTANT(batchname, operator, constant)        \
+	vm_store_v2f(&readable, batchname);                                        \
+	ck_assert_float_eq_tol(initial.x operator constant, readable.x, EPSILON);  \
+	ck_assert_float_eq_tol(initial.y operator constant, readable.y, EPSILON);
+
 	{
 		vm_v2f_t out = vm_add_v2f(a, b);
 		vm_v2fs_t readable;
 		vm_store_v2f(&readable, out);
 		ck_assert_float_eq_tol(initial.x + op.x, readable.x, EPSILON);
 		ck_assert_float_eq_tol(initial.y + op.y, readable.y, EPSILON);
+		for (int i = -100; i < 100; ++i) {
+			out = vm_add_v2f_constant(a, (vm_float32_t)i);
+			ARITHMETIC_OPS_1X_CHECK_CONSTANT(out, +, i);
+		}
 	}
 
 	{
@@ -228,6 +237,10 @@ START_TEST(arithmetic_ops_1x) // NOLINT
 		vm_store_v2f(&readable, out);
 		ck_assert_float_eq_tol(initial.x - op.x, readable.x, EPSILON);
 		ck_assert_float_eq_tol(initial.y - op.y, readable.y, EPSILON);
+		for (int i = -100; i < 100; ++i) {
+			out = vm_sub_v2f_constant(a, (vm_float32_t)i);
+			ARITHMETIC_OPS_1X_CHECK_CONSTANT(out, -, i);
+		}
 	}
 
 	{
@@ -236,6 +249,10 @@ START_TEST(arithmetic_ops_1x) // NOLINT
 		vm_store_v2f(&readable, out);
 		ck_assert_float_eq_tol(initial.x * op.x, readable.x, EPSILON);
 		ck_assert_float_eq_tol(initial.y * op.y, readable.y, EPSILON);
+		for (int i = -100; i < 100; ++i) {
+			out = vm_mul_v2f_constant(a, (vm_float32_t)i);
+			ARITHMETIC_OPS_1X_CHECK_CONSTANT(out, *, i);
+		}
 	}
 
 	{
@@ -244,11 +261,16 @@ START_TEST(arithmetic_ops_1x) // NOLINT
 		vm_store_v2f(&readable, out);
 		ck_assert_float_eq_tol(initial.x / op.x, readable.x, EPSILON);
 		ck_assert_float_eq_tol(initial.y / op.y, readable.y, EPSILON);
+		for (int i = -100; i < 100; ++i) {
+			out = vm_div_v2f_constant(a, (vm_float32_t)i);
+			ARITHMETIC_OPS_1X_CHECK_CONSTANT(out, /, i);
+		}
 	}
+#undef ARITHMETIC_OPS_1X_CHECK_CONSTANT
 }
 END_TEST
 
-START_TEST(arithmetic_ops_2x) // NOLINT
+START_TEST(arithmetic_ops_2x)
 {
 	const vm_v2fs_t initial[2] = {
 		{.x = .5F, .y = 3.7F},
@@ -272,25 +294,53 @@ START_TEST(arithmetic_ops_2x) // NOLINT
 							   EPSILON);                                       \
 	}
 
+#define ARITHMETIC_OPS_2X_CHECK_CONSTANT(batchname, operator, constant)        \
+	vm_v2fs_t readable[2];                                                     \
+	vm_store_2xv2f(readable, batchname);                                       \
+	for (int i = 0; i < 2; ++i) {                                              \
+		ck_assert_float_eq_tol(initial[i].x operator constant, readable[i].x,  \
+							   EPSILON);                                       \
+		ck_assert_float_eq_tol(initial[i].y operator constant, readable[i].y,  \
+							   EPSILON);                                       \
+	}
+
 	{
 		vm_2batch_v2f_t out = vm_add_2xv2f(a, b);
 		ARITHMETIC_OPS_2X_CHECK(out, +);
+		for (int j = -100; j < 100; ++j) {
+			out = vm_add_2xv2f_constant(a, (vm_float32_t)j);
+			ARITHMETIC_OPS_2X_CHECK_CONSTANT(out, +, j)
+		}
 	}
 
 	{
 		vm_2batch_v2f_t out = vm_sub_2xv2f(a, b);
 		ARITHMETIC_OPS_2X_CHECK(out, -);
+		for (int j = -100; j < 100; ++j) {
+			out = vm_sub_2xv2f_constant(a, (vm_float32_t)j);
+			ARITHMETIC_OPS_2X_CHECK_CONSTANT(out, -, j)
+		}
 	}
 
 	{
 		vm_2batch_v2f_t out = vm_mul_2xv2f(a, b);
 		ARITHMETIC_OPS_2X_CHECK(out, *);
+		for (int j = -100; j < 100; ++j) {
+			out = vm_mul_2xv2f_constant(a, (vm_float32_t)j);
+			ARITHMETIC_OPS_2X_CHECK_CONSTANT(out, *, j)
+		}
 	}
 
 	{
 		vm_2batch_v2f_t out = vm_div_2xv2f(a, b);
 		ARITHMETIC_OPS_2X_CHECK(out, /);
+		for (int j = -100; j < 100; ++j) {
+			out = vm_div_2xv2f_constant(a, (vm_float32_t)j);
+			ARITHMETIC_OPS_2X_CHECK_CONSTANT(out, /, j)
+		}
 	}
+#undef ARITHMETIC_OPS_2X_CHECK
+#undef ARITHMETIC_OPS_2X_CHECK_CONSTANT
 }
 END_TEST
 
@@ -326,25 +376,53 @@ START_TEST(arithmetic_ops_8x) // NOLINT
 							   EPSILON);                                       \
 	}
 
+#define ARITHMETIC_OPS_8X_CHECK_CONSTANT(batchname, operator, constant)        \
+	vm_v2fs_t readable[8];                                                     \
+	vm_store_8xv2f(readable, batchname);                                       \
+	for (int i = 0; i < 8; ++i) {                                              \
+		ck_assert_float_eq_tol(initial[i].x operator constant, readable[i].x,  \
+							   EPSILON);                                       \
+		ck_assert_float_eq_tol(initial[i].y operator constant, readable[i].y,  \
+							   EPSILON);                                       \
+	}
+
 	{
 		vm_8batch_v2f_t out = vm_add_8xv2f(a, b);
 		ARITHMETIC_OPS_8X_CHECK(out, +);
+		for (int j = -100; j < 100; ++j) {
+			out = vm_add_8xv2f_constant(a, (vm_float32_t)j);
+			ARITHMETIC_OPS_8X_CHECK_CONSTANT(out, +, j);
+		}
 	}
 
 	{
 		vm_8batch_v2f_t out = vm_sub_8xv2f(a, b);
 		ARITHMETIC_OPS_8X_CHECK(out, -);
+		for (int j = -100; j < 100; ++j) {
+			out = vm_sub_8xv2f_constant(a, (vm_float32_t)j);
+			ARITHMETIC_OPS_8X_CHECK_CONSTANT(out, -, j);
+		}
 	}
 
 	{
 		vm_8batch_v2f_t out = vm_mul_8xv2f(a, b);
 		ARITHMETIC_OPS_8X_CHECK(out, *);
+		for (int j = -100; j < 100; ++j) {
+			out = vm_mul_8xv2f_constant(a, (vm_float32_t)j);
+			ARITHMETIC_OPS_8X_CHECK_CONSTANT(out, *, j);
+		}
 	}
 
 	{
 		vm_8batch_v2f_t out = vm_div_8xv2f(a, b);
 		ARITHMETIC_OPS_8X_CHECK(out, /);
+		for (int j = -100; j < 100; ++j) {
+			out = vm_div_8xv2f_constant(a, (vm_float32_t)j);
+			ARITHMETIC_OPS_8X_CHECK_CONSTANT(out, /, j);
+		}
 	}
+#undef ARITHMETIC_OPS_8X_CHECK
+#undef ARITHMETIC_OPS_8X_CHECK_CONSTANT
 }
 END_TEST
 
