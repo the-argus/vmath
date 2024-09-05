@@ -294,6 +294,60 @@ START_TEST(arithmetic_ops_2x) // NOLINT
 }
 END_TEST
 
+START_TEST(arithmetic_ops_8x) // NOLINT
+{
+	const vm_v2fs_t initial[8] = {
+		{.x = .5F, .y = 3.7F},			{.x = .8F, .y = 83.2F},
+		{.x = .92348F, .y = 29084.7F},	{.x = .8F, .y = 83.2F},
+		{.x = .5F, .y = 3.7F},			{.x = .8F, .y = 923084.2F},
+		{.x = .5F, .y = 90384.190238F}, {.x = .3948F, .y = 23940823.2F},
+	};
+	const vm_v2fs_t op[8] = {
+		{.x = 100.F, .y = 312.F},
+		{.x = 13.93F, .y = 92.90F},
+		{.x = 100.F, .y = 312.F},
+		{.x = -1923813.93F, .y = 92.90F},
+		{.x = 100.F, .y = .23094F},
+		{.x = 912034813.93F, .y = 92.90F},
+		{.x = 289304.09083F, .y = 312.90234823F},
+		{.x = 9023413.2930493F, .y = -93320482.923940F},
+	};
+
+	vm_8batch_v2f_t a = vm_load_8xv2f(initial);
+	vm_8batch_v2f_t b = vm_load_8xv2f(op);
+
+#define ARITHMETIC_OPS_8X_CHECK(batchname, operator)                           \
+	vm_v2fs_t readable[8];                                                     \
+	vm_store_8xv2f(readable, batchname);                                       \
+	for (int i = 0; i < 8; ++i) {                                              \
+		ck_assert_float_eq_tol(initial[i].x operator op[i].x, readable[i].x,   \
+							   EPSILON);                                       \
+		ck_assert_float_eq_tol(initial[i].y operator op[i].y, readable[i].y,   \
+							   EPSILON);                                       \
+	}
+
+	{
+		vm_8batch_v2f_t out = vm_add_8xv2f(a, b);
+		ARITHMETIC_OPS_8X_CHECK(out, +);
+	}
+
+	{
+		vm_8batch_v2f_t out = vm_sub_8xv2f(a, b);
+		ARITHMETIC_OPS_8X_CHECK(out, -);
+	}
+
+	{
+		vm_8batch_v2f_t out = vm_mul_8xv2f(a, b);
+		ARITHMETIC_OPS_8X_CHECK(out, *);
+	}
+
+	{
+		vm_8batch_v2f_t out = vm_div_8xv2f(a, b);
+		ARITHMETIC_OPS_8X_CHECK(out, /);
+	}
+}
+END_TEST
+
 Suite* vector2_f32_suite(void)
 {
 	Suite* const suite = suite_create("Vector2 f32");
@@ -312,6 +366,7 @@ Suite* vector2_f32_suite(void)
 	// arithmetic tests
 	tcase_add_test(vec_1x, arithmetic_ops_1x);
 	tcase_add_test(vec_2x, arithmetic_ops_2x);
+	tcase_add_test(vec_2x, arithmetic_ops_8x);
 	suite_add_tcase(suite, vec_1x);
 	suite_add_tcase(suite, vec_2x);
 	suite_add_tcase(suite, vec_8x);
