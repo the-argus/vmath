@@ -262,6 +262,9 @@ START_TEST(arithmetic_ops_1x) // NOLINT
 		ck_assert_float_eq_tol(initial.x / op.x, readable.x, EPSILON);
 		ck_assert_float_eq_tol(initial.y / op.y, readable.y, EPSILON);
 		for (int i = -100; i < 100; ++i) {
+			if (abs(i) < 0.001) {
+				continue;
+			}
 			out = vm_div_v2f_constant(a, (vm_float32_t)i);
 			ARITHMETIC_OPS_1X_CHECK_CONSTANT(out, /, i);
 		}
@@ -335,6 +338,9 @@ START_TEST(arithmetic_ops_2x)
 		vm_2batch_v2f_t out = vm_div_2xv2f(a, b);
 		ARITHMETIC_OPS_2X_CHECK(out, /);
 		for (int j = -100; j < 100; ++j) {
+			if (abs(j) < 0.001) {
+				continue;
+			}
 			out = vm_div_2xv2f_constant(a, (vm_float32_t)j);
 			ARITHMETIC_OPS_2X_CHECK_CONSTANT(out, /, j)
 		}
@@ -417,6 +423,9 @@ START_TEST(arithmetic_ops_8x) // NOLINT
 		vm_8batch_v2f_t out = vm_div_8xv2f(a, b);
 		ARITHMETIC_OPS_8X_CHECK(out, /);
 		for (int j = -100; j < 100; ++j) {
+			if (abs(j) < 0.001) {
+				continue;
+			}
 			out = vm_div_8xv2f_constant(a, (vm_float32_t)j);
 			ARITHMETIC_OPS_8X_CHECK_CONSTANT(out, /, j);
 		}
