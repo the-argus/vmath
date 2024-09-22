@@ -6,3 +6,4 @@
 #include "vmath/decl/vec16_f32.h"
 #include "vmath/decl/vec2_f32.h"
 #include "vmath/decl/vec4_f32.h"
+#include "vmath/decl/vec8_f32.h"
