@@ -6,68 +6,75 @@
 #define __VMATH_VEC4_F32_H
 
 #include "vmath/decl/vec4_f32.h"
+#include "vmath/internal/memutil.h"
 #include <assert.h>
 
-VMATH_INLINE vm_2batch_v2f_t vm_load_2xv2f(const vm_v2fs_t batch[2])
+VMATH_INLINE vm_v4f_t vm_load_v4f(const vm_v4fs_t* const vec)
 {
-#define VMATH_LOAD_2XV2_SCALAR()                                               \
-	vm_2batch_v2f_t result;                                                    \
-	memcpy(&result, batch, sizeof(vm_2batch_v2f_t));                           \
+	assert(vm_mem_is_aligned(vec, 16));
+#if defined(VMATH_SSE41_ENABLE)
+	assert((void*)&vec->x == (void*)vec); // assert x is first in struct
+	return _mm_load_ps(&vec->x);
+#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
+#error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
+#else
+	vm_v4f_t result;
+	result.buffer[0] = vec->x;
+	result.buffer[1] = vec->y;
+	result.buffer[2] = vec->z;
+	result.buffer[3] = vec->w;
 	return result;
-
-#if defined(VMATH_X64_ENABLE)
-#if defined(VMATH_SSE41_ENABLE)
-	assert((void*)&batch->x == (void*)batch);
-	return _mm_load_ps(&batch->x);
-#else
-	VMATH_LOAD_2XV2_SCALAR()
-#endif // defined(VMATH_SSE41_ENABLE)
-#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
-#error ARM SIMD not implemented
-#else
-	VMATH_LOAD_2XV2_SCALAR()
 #endif
-#undef VMATH_LOAD_2XV2_SCALAR
 }
 
-/// Store 2 contiguous vec2s to memory
-VMATH_INLINE void vm_store_2xv2f(vm_v2fs_t output[2],
-								 const vm_2batch_v2f_t batch)
+VMATH_INLINE vm_v4f_t vm_loadb_v4f(const vm_float32_t vec[4])
 {
-#define VMATH_STORE_2XV2_SCALAR() memcpy(output, &batch, sizeof(batch));
-#if defined(VMATH_X64_ENABLE)
-#if defined(VMATH_SSE41_ENABLE)
-	assert((void*)&output->x == (void*)output);
-	_mm_store_ps(&output->x, batch);
-#else
-	VMATH_STORE_2XV2_SCALAR()
-#endif // defined(VMATH_SSE41_ENABLE)
-#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
-#error ARM SIMD not implemented
-#else
-	VMATH_STORE_2XV2_SCALAR()
-#endif
-#undef VMATH_STORE_2XV2_SCALAR
+	assert(sizeof(vm_float32_t[4]) == sizeof(vm_v4fs_t));
+	return vm_load_v4f((const vm_v4fs_t*)vec);
 }
 
-VMATH_INLINE vm_2batch_v2f_t vm_splat_2xv2f(const vm_float32_t fill)
+VMATH_INLINE void vm_store_v4f(vm_v4fs_t* output, vm_v4f_t vec)
 {
-#define VMATH_SPLAT_2XV2_SCALAR()                                              \
-	return (vm_2batch_v2f_t){.buffer = {(vm_v2fs_t){.x = fill, .y = fill},     \
-										(vm_v2fs_t){.x = fill, .y = fill}}};
+	assert(vm_mem_is_aligned(output, 16));
+#if defined(VMATH_SSE41_ENABLE)
+	assert((void*)&output->x == (void*)output); // assert x is first in struct
+	_mm_store_ps(&output->x, vec);
+#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
+#error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
+#else
+	output->buffer[0] = vec.buffer[0];
+	output->buffer[1] = vec.buffer[1];
+	output->buffer[2] = vec.buffer[2];
+	output->buffer[3] = vec.buffer[3];
+#endif
+}
 
-#if defined(VMATH_X64_ENABLE)
+VMATH_INLINE void vm_storeb_v4f(vm_float32_t output[4], vm_v4f_t vec)
+{
+	assert(sizeof(vm_float32_t[4]) == sizeof(vm_v4fs_t));
+	vm_store_v4f((vm_v4fs_t*)output, vec);
+}
+
+VMATH_INLINE vm_v4f_t vm_splat_v4f(vm_float32_t fill)
+{
 #if defined(VMATH_SSE41_ENABLE)
 	return _mm_set1_ps(fill);
-#else
-	VMATH_SPLAT_2XV2_SCALAR()
-#endif // defined(VMATH_SSE41_ENABLE)
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
 #else
-	VMATH_SPLAT_2XV2_SCALAR()
+	vm_v4f_t out;
+	out->buffer[0] = fill;
+	out->buffer[1] = fill;
+	out->buffer[2] = fill;
+	out->buffer[3] = fill;
+	return out;
 #endif
-#undef VMATH_SPLAT_2XV2_SCALAR
 }
 
 #include "vmath/generated/v4f/v4f_componentwise_add.h"

@@ -5,99 +5,130 @@
 #include "vmath/internal/memutil.h"
 #include <assert.h>
 
-VMATH_INLINE vm_8batch_v2f_t vm_load_8xv2f(const vm_v2fs_t batch[8])
+VMATH_INLINE vm_v16f_t vm_load_v16f(const vm_v16fs_t* vec)
 {
-#define VMATH_LOAD_8XV2_SCALAR()                                               \
-	vm_8batch_v2f_t result;                                                    \
-	memcpy(&result, batch, sizeof(vm_8batch_v2f_t));                           \
-	return result;
+	assert(vm_mem_is_aligned(vec, 64));
 
-#if defined(VMATH_X64_ENABLE)
-#if defined(VMATH_SSE41_ENABLE)
 #if defined(VMATH_AVX512_GENERIC_ENABLE)
-	return _mm512_load_ps(batch);
-#else
-	assert((void*)&batch->x == (void*)batch);
-	vm_8batch_v2f_t result;
-#pragma unroll
-	for (int8_t i = 0; i < 4; ++i) {
-		result.buffer[i] = _mm_load_ps(&batch[i * 2UL].x);
-	}
-	return result;
-#endif // defined(VMATH_AVX512_GENERIC_ENABLE)
-#else
-	VMATH_LOAD_8XV2_SCALAR()
-#endif // defined(VMATH_SSE41_ENABLE)
+
+	return _mm512_load_ps(vec->buffer);
+
+#elif defined(VMATH_AVX256_GENERIC_ENABLE)
+
+	vm_v16f_t out;
+	out.buffer[0] = _mm256_load_ps(vec->buffer);
+	out.buffer[1] = _mm256_load_ps(vec->buffer + 8);
+	return out;
+
+#elif defined(VMATH_SSE41_ENABLE)
+
+	vm_v16f_t out;
+	out.buffer[0] = _mm_load_ps(vec->buffer);
+	out.buffer[1] = _mm_load_ps(vec->buffer + 4);
+	out.buffer[2] = _mm_load_ps(vec->buffer + 8);
+	out.buffer[3] = _mm_load_ps(vec->buffer + 12);
+	return out;
+
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
 #else
-	VMATH_LOAD_8XV2_SCALAR()
+
+	// TODO: maybe memcpy better here?
+	vm_v16f_t out;
+#pragma unroll
+	for (int i = 0; i < 16; ++i) {
+		out.buffer[i] = vec->buffer[i];
+	}
+	return out;
+
 #endif
-#undef VMATH_LOAD_8XV2_SCALAR
 }
 
-VMATH_INLINE void vm_store_8xv2f(vm_v2fs_t output[8],
-								 const vm_8batch_v2f_t batch)
+VMATH_INLINE vm_v16f_t vm_loadb_v16f(const vm_float32_t vec[16])
 {
-#define VMATH_STORE_8XV2_SCALAR() memcpy(output, &batch, sizeof(batch));
+	assert(sizeof(vm_float32_t[16]) == sizeof(vm_v16fs_t));
+	return vm_load_v16f((const vm_v16fs_t*)vec);
+}
 
-#if defined(VMATH_X64_ENABLE)
-#if defined(VMATH_SSE41_ENABLE)
+VMATH_INLINE void vm_store_v16f(vm_v16fs_t* output, vm_v16f_t vec)
+{
+	assert(vm_mem_is_aligned(output, 64));
+
 #if defined(VMATH_AVX512_GENERIC_ENABLE)
-	_mm512_store_ps(output, batch);
-#else
-	assert((void*)&output->x == (void*)output);
-#pragma unroll
-	for (int8_t i = 0; i < 4; ++i) {
-		_mm_store_ps(&output[(int8_t)(i * 2)].x, batch.buffer[i]);
-	}
-#endif // defined(VMATH_AVX512_GENERIC_ENABLE)
-#else
-	VMATH_STORE_8XV2_SCALAR()
-#endif // defined(VMATH_SSE41_ENABLE)
+
+	_mm512_store_ps(output, vec);
+
+#elif defined(VMATH_AVX256_GENERIC_ENABLE)
+
+	_mm256_store_ps(output->buffer, vec.buffer[0]);
+	_mm256_store_ps(output->buffer + 8, vec.buffer[1]);
+
+#elif defined(VMATH_SSE41_ENABLE)
+
+	_mm_store_ps(output->buffer, vec.buffer[0]);
+	_mm_store_ps(output->buffer + 4, vec.buffer[1]);
+	_mm_store_ps(output->buffer + 8, vec.buffer[2]);
+	_mm_store_ps(output->buffer + 12, vec.buffer[3]);
+
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
 #else
-	VMATH_STORE_8XV2_SCALAR()
+
+	// TODO: maybe memcpy better here?
+#pragma unroll
+	for (int i = 0; i < 16; ++i) {
+		output->buffer[i] = vec.buffer[i];
+	}
+
 #endif
-#undef VMATH_STORE_8XV2_SCALAR
 }
 
-VMATH_INLINE vm_8batch_v2f_t vm_splat_8xv2f(const vm_float32_t fill)
+VMATH_INLINE void vm_storeb_v16f(vm_float32_t output[16], vm_v16f_t vec)
 {
-#define VMATH_SPLAT_8XV2_SCALAR()                                              \
-	return (vm_8batch_v2f_t){.buffer = {                                       \
-								 (vm_v2fs_t){.x = fill, .y = fill},            \
-								 (vm_v2fs_t){.x = fill, .y = fill},            \
-								 (vm_v2fs_t){.x = fill, .y = fill},            \
-								 (vm_v2fs_t){.x = fill, .y = fill},            \
-								 (vm_v2fs_t){.x = fill, .y = fill},            \
-								 (vm_v2fs_t){.x = fill, .y = fill},            \
-								 (vm_v2fs_t){.x = fill, .y = fill},            \
-								 (vm_v2fs_t){.x = fill, .y = fill},            \
-							 }};
+	assert(sizeof(vm_float32_t[16]) == sizeof(vm_v16fs_t));
+	vm_store_v16f((vm_v16fs_t*)output, vec);
+}
 
-#if defined(VMATH_X64_ENABLE)
-#if defined(VMATH_SSE41_ENABLE)
+VMATH_INLINE vm_v16f_t vm_splat_v16f(vm_float32_t fill)
+{
 #if defined(VMATH_AVX512_GENERIC_ENABLE)
+
 	return _mm512_set1_ps(fill);
-#else
-	vm_8batch_v2f_t result;
-#pragma unroll
-	for (int8_t i = 0; i < 4; ++i) {
-		result.buffer[i] = _mm_set1_ps(fill);
-	}
-	return result;
-#endif // defined(VMATH_AVX512_GENERIC_ENABLE)
-#else
-	VMATH_SPLAT_8XV2_SCALAR()
-#endif // defined(VMATH_SSE41_ENABLE)
+
+#elif defined(VMATH_AVX256_GENERIC_ENABLE)
+
+	vm_v16f_t out;
+	out.buffer[0] = _mm256_set1_ps(fill);
+	out.buffer[1] = _mm256_set1_ps(fill);
+	return out;
+
+#elif defined(VMATH_SSE41_ENABLE)
+
+	vm_v16f_t out;
+	out.buffer[0] = _mm_set1_ps(fill);
+	out.buffer[1] = _mm_set1_ps(fill);
+	out.buffer[2] = _mm_set1_ps(fill);
+	out.buffer[3] = _mm_set1_ps(fill);
+	return out;
+
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
 #else
-	VMATH_SPLAT_8XV2_SCALAR()
+
+	vm_v16f_t out;
+#pragma unroll
+	for (int i = 0; i < 16; ++i) {
+		out->buffer[i] = fill;
+	}
+	return out;
+
 #endif
-#undef VMATH_SPLAT_8XV2_SCALAR
 }
 
 #include "vmath/generated/v16f/v16f_componentwise_add.h"
