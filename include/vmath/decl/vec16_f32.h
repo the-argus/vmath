@@ -11,7 +11,7 @@ typedef struct VMATH_ALIGNED(64)
 
 // undef-ed later
 #define VMATH_V16_SCALAR_FALLBACK()                                            \
-	typedef struct VMATH_ALIGNED(64)                                           \
+	typedef struct                                                             \
 	{                                                                          \
 		vm_float32_t buffer[16];                                               \
 	} vm_v16f_t;

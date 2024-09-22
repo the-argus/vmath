@@ -13,7 +13,7 @@ typedef struct VMATH_ALIGNED(16)
 } vm_v4fs_t;
 
 #define VMATH_V4_SCALAR_FALLBACK()                                             \
-	typedef struct VMATH_ALIGNED(64)                                           \
+	typedef struct                                                             \
 	{                                                                          \
 		vm_float32_t buffer[4];                                                \
 	} vm_v4f_t;

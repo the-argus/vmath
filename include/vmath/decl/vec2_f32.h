@@ -7,14 +7,14 @@
 
 /// Vector of 2 floats for storage in main memory
 /// (v -> vector, 2f -> two single-precision floats, s -> storage)
-typedef struct VMATH_ALIGNED(8)
+typedef struct VMATH_ALIGNED(16)
 {
 	vm_float32_t x;
 	vm_float32_t y;
 } vm_v2fs_t;
 
 #define VMATH_V2_SCALAR_FALLBACK()                                             \
-	typedef struct VMATH_ALIGNED(8)                                            \
+	typedef struct                                                             \
 	{                                                                          \
 		vm_float32_t buffer[2];                                                \
 	} vm_v2f_t;
@@ -49,7 +49,7 @@ VMATH_INLINE vm_v2f_t vm_loadb_v2f(const vm_float32_t vec[2]);
 /// Store a vec2 into memory. Memory must be 16 byte aligned.
 VMATH_INLINE void vm_store_v2f(vm_v2fs_t* output, vm_v2f_t vector);
 /// Store a vec2 into memory as a float buffer. Memory must be 16 byte aligned.
-VMATH_INLINE void vm_storeb_v2f(float output[2], vm_v2f_t vector);
+VMATH_INLINE void vm_storeb_v2f(vm_float32_t output[2], vm_v2f_t vector);
 
 /// Load a float32 into both elements of a vec2
 VMATH_INLINE vm_v2f_t vm_splat_v2f(vm_float32_t fill);
@@ -78,17 +78,6 @@ VMATH_INLINE float vm_length_v2f(vm_v2f_t vec);
 VMATH_INLINE float vm_length_inv_v2f(vm_v2f_t vec);
 /// Compute the length of a vec2, squared. Faster than finding the length
 VMATH_INLINE float vm_length_sqr_v2f(vm_v2f_t vec);
-/// Compute the length of a vec2, sending it into all components of an output
-/// vec2. Can keep values inside SIMD registers, which may be advantageous
-VMATH_INLINE vm_v2f_t vm_length_v2f_splat(vm_v2f_t vec);
-/// Compute 1 over the length of a vec2, sending it into all components of an
-/// output vec2. Can keep values inside SIMD registers, which may be
-/// advantageous
-VMATH_INLINE vm_v2f_t vm_length_inv_v2f_splat(vm_v2f_t vec);
-/// Compute the length of a vec2, sending it into all components of an output
-/// vec2. Can keep values inside SIMD registers, which may be advantageous
-VMATH_INLINE vm_v2f_t vm_length_sqr_v2f_splat(vm_v2f_t vec);
-
 /// Compute the length of a vec2, sending it into all components of an output
 /// vec2. Can keep values inside SIMD registers, which may be advantageous
 VMATH_INLINE vm_v2f_t vm_length_v2f_splat(vm_v2f_t vec);

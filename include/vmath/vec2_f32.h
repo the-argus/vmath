@@ -6,6 +6,7 @@
 #define __VMATH_VEC2_F32_H
 
 #include "vmath/decl/vec2_f32.h"
+#include "vmath/internal/memutil.h"
 #include <assert.h>
 #include <math.h>
 #include <string.h>
@@ -15,223 +16,89 @@
  * stack)
  */
 
-VMATH_INLINE vm_v2f_t vm_load_v2f(const vm_v2fs_t vector[1])
+VMATH_INLINE vm_v2f_t vm_load_v2f(const vm_v2fs_t* vec)
 {
-#define VMATH_LOAD_V2_SCALAR() return vector[0];
+	assert(vm_mem_is_aligned(vec, 16));
+
 #if defined(VMATH_X64_ENABLE)
 #if defined(VMATH_SSE41_ENABLE)
-	assert((void*)&vector[0].x == (void*)vector);
+	// assert that x is at the beginning of the struct
+	assert((void*)&vec->x == (void*)vec);
 	// HACK: loading both 32 bit floats as a double. this intrinsic returns
 	// __m128d but it is being returned into a __m128. I believe this is safe
 	// according to
 	// https://stackoverflow.com/questions/67121478/load-or-shuffle-a-pair-of-floats-with-simd-intrinsics-for-doubles
 	// but this does not bring me much confidence - Ian
-	return _mm_load_sd((double*)&vector->x);
+	return _mm_load_sd((double*)&vec->x);
 #else
-	VMATH_LOAD_V2_SCALAR()
-#endif // defined(VMATH_SSE41_ENABLE)
+	return *vec;
+#endif
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
 #else
-	VMATH_LOAD_V2_SCALAR()
+	return *vec;
 #endif
-#undef VMATH_LOAD_V2_SCALAR
 }
 
-VMATH_INLINE void vm_store_v2f(vm_v2fs_t output[1], const vm_v2f_t vector)
+VMATH_INLINE vm_v2f_t vm_loadb_v2f(const vm_float32_t vec[2])
 {
-#define VMATH_STORE_V2_SCALAR() output[0] = vector;
+	assert(sizeof(vm_float32_t[2]) == sizeof(vm_v2fs_t));
+	// regular load includes alignment assert
+	return vm_load_v2f((const vm_v2fs_t*)vec);
+}
+
+VMATH_INLINE void vm_store_v2f(vm_v2fs_t* const output, const vm_v2f_t vector)
+{
+	assert(vm_mem_is_aligned(output, 16));
+
 #if defined(VMATH_X64_ENABLE)
 #if defined(VMATH_SSE41_ENABLE)
 	assert((void*)&output[0].x == (void*)output);
-	// make sure that output is aligned to double - last 3 bits, or 0b111(7),
-	// are all zero
-	assert(((size_t)output & 7UL) == 0);
 	// HACK: storing both 32 bit floats as a double. see vm_load_v2f
 	_mm_store_sd((double*)&output->x, vector);
 #else
-	VMATH_STORE_V2_SCALAR()
-#endif // defined(VMATH_SSE41_ENABLE)
+	output->x = vector.buffer[0];
+	output->y = vector.buffer[1];
+#endif
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
 #else
-	VMATH_STORE_V2_SCALAR()
+	output->x = vector.buffer[0];
+	output->y = vector.buffer[1];
 #endif
-#undef VMATH_STORE_V2_SCALAR
 }
 
-VMATH_INLINE vm_8batch_v2f_t vm_load_8xv2f(const vm_v2fs_t batch[8])
+VMATH_INLINE void vm_storeb_v2f(vm_float32_t output[2], vm_v2f_t vector)
 {
-#define VMATH_LOAD_8XV2_SCALAR()                                               \
-	vm_8batch_v2f_t result;                                                    \
-	memcpy(&result, batch, sizeof(vm_8batch_v2f_t));                           \
-	return result;
-
-#if defined(VMATH_X64_ENABLE)
-#if defined(VMATH_SSE41_ENABLE)
-#if defined(VMATH_AVX512_GENERIC_ENABLE)
-	return _mm512_load_ps(batch);
-#else
-	assert((void*)&batch->x == (void*)batch);
-	vm_8batch_v2f_t result;
-#pragma unroll
-	for (int8_t i = 0; i < 4; ++i) {
-		result.buffer[i] = _mm_load_ps(&batch[i * 2UL].x);
-	}
-	return result;
-#endif // defined(VMATH_AVX512_GENERIC_ENABLE)
-#else
-	VMATH_LOAD_8XV2_SCALAR()
-#endif // defined(VMATH_SSE41_ENABLE)
-#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
-#error ARM SIMD not implemented
-#else
-	VMATH_LOAD_8XV2_SCALAR()
-#endif
-#undef VMATH_LOAD_8XV2_SCALAR
-}
-
-VMATH_INLINE void vm_store_8xv2f(vm_v2fs_t output[8],
-								 const vm_8batch_v2f_t batch)
-{
-#define VMATH_STORE_8XV2_SCALAR() memcpy(output, &batch, sizeof(batch));
-
-#if defined(VMATH_X64_ENABLE)
-#if defined(VMATH_SSE41_ENABLE)
-#if defined(VMATH_AVX512_GENERIC_ENABLE)
-	_mm512_store_ps(output, batch);
-#else
-	assert((void*)&output->x == (void*)output);
-#pragma unroll
-	for (int8_t i = 0; i < 4; ++i) {
-		_mm_store_ps(&output[(int8_t)(i * 2)].x, batch.buffer[i]);
-	}
-#endif // defined(VMATH_AVX512_GENERIC_ENABLE)
-#else
-	VMATH_STORE_8XV2_SCALAR()
-#endif // defined(VMATH_SSE41_ENABLE)
-#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
-#error ARM SIMD not implemented
-#else
-	VMATH_STORE_8XV2_SCALAR()
-#endif
-#undef VMATH_STORE_8XV2_SCALAR
-}
-
-VMATH_INLINE vm_2batch_v2f_t vm_load_2xv2f(const vm_v2fs_t batch[2])
-{
-#define VMATH_LOAD_2XV2_SCALAR()                                               \
-	vm_2batch_v2f_t result;                                                    \
-	memcpy(&result, batch, sizeof(vm_2batch_v2f_t));                           \
-	return result;
-
-#if defined(VMATH_X64_ENABLE)
-#if defined(VMATH_SSE41_ENABLE)
-	assert((void*)&batch->x == (void*)batch);
-	return _mm_load_ps(&batch->x);
-#else
-	VMATH_LOAD_2XV2_SCALAR()
-#endif // defined(VMATH_SSE41_ENABLE)
-#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
-#error ARM SIMD not implemented
-#else
-	VMATH_LOAD_2XV2_SCALAR()
-#endif
-#undef VMATH_LOAD_2XV2_SCALAR
-}
-
-/// Store 2 contiguous vec2s to memory
-VMATH_INLINE void vm_store_2xv2f(vm_v2fs_t output[2],
-								 const vm_2batch_v2f_t batch)
-{
-#define VMATH_STORE_2XV2_SCALAR() memcpy(output, &batch, sizeof(batch));
-#if defined(VMATH_X64_ENABLE)
-#if defined(VMATH_SSE41_ENABLE)
-	assert((void*)&output->x == (void*)output);
-	_mm_store_ps(&output->x, batch);
-#else
-	VMATH_STORE_2XV2_SCALAR()
-#endif // defined(VMATH_SSE41_ENABLE)
-#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
-#error ARM SIMD not implemented
-#else
-	VMATH_STORE_2XV2_SCALAR()
-#endif
-#undef VMATH_STORE_2XV2_SCALAR
+	assert(sizeof(vm_float32_t[2]) == sizeof(vm_v2fs_t));
+	vm_store_v2f((vm_v2fs_t*)output, vector);
 }
 
 VMATH_INLINE vm_v2f_t vm_splat_v2f(vm_float32_t fill)
 {
-#define VMATH_SPLAT_V2_SCALAR() return (vm_v2f_t){.x = fill, .y = fill};
 #if defined(VMATH_X64_ENABLE)
 #if defined(VMATH_SSE41_ENABLE)
 	return _mm_set_ps(0, 0, fill, fill);
 #else
-	VMATH_SPLAT_V2_SCALAR()
-#endif // defined(VMATH_SSE41_ENABLE)
+	vm_v2f_t output;
+	output.buffer[0] = fill;
+	output.buffer[1] = fill;
+	return output;
+#endif
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
 #else
-	VMATH_SPLAT_V2_SCALAR()
+	vm_v2f_t output;
+	output.buffer[0] = fill;
+	output.buffer[1] = fill;
+	return output;
 #endif
-#undef VMATH_SPLAT_V2_SCALAR
-}
-
-VMATH_INLINE vm_2batch_v2f_t vm_splat_2xv2f(const vm_float32_t fill)
-{
-#define VMATH_SPLAT_2XV2_SCALAR()                                              \
-	return (vm_2batch_v2f_t){.buffer = {(vm_v2fs_t){.x = fill, .y = fill},     \
-										(vm_v2fs_t){.x = fill, .y = fill}}};
-
-#if defined(VMATH_X64_ENABLE)
-#if defined(VMATH_SSE41_ENABLE)
-	return _mm_set1_ps(fill);
-#else
-	VMATH_SPLAT_2XV2_SCALAR()
-#endif // defined(VMATH_SSE41_ENABLE)
-#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
-#error ARM SIMD not implemented
-#else
-	VMATH_SPLAT_2XV2_SCALAR()
-#endif
-#undef VMATH_SPLAT_2XV2_SCALAR
-}
-
-VMATH_INLINE vm_8batch_v2f_t vm_splat_8xv2f(const vm_float32_t fill)
-{
-#define VMATH_SPLAT_8XV2_SCALAR()                                              \
-	return (vm_8batch_v2f_t){.buffer = {                                       \
-								 (vm_v2fs_t){.x = fill, .y = fill},            \
-								 (vm_v2fs_t){.x = fill, .y = fill},            \
-								 (vm_v2fs_t){.x = fill, .y = fill},            \
-								 (vm_v2fs_t){.x = fill, .y = fill},            \
-								 (vm_v2fs_t){.x = fill, .y = fill},            \
-								 (vm_v2fs_t){.x = fill, .y = fill},            \
-								 (vm_v2fs_t){.x = fill, .y = fill},            \
-								 (vm_v2fs_t){.x = fill, .y = fill},            \
-							 }};
-
-#if defined(VMATH_X64_ENABLE)
-#if defined(VMATH_SSE41_ENABLE)
-#if defined(VMATH_AVX512_GENERIC_ENABLE)
-	return _mm512_set1_ps(fill);
-#else
-	vm_8batch_v2f_t result;
-#pragma unroll
-	for (int8_t i = 0; i < 4; ++i) {
-		result.buffer[i] = _mm_set1_ps(fill);
-	}
-	return result;
-#endif // defined(VMATH_AVX512_GENERIC_ENABLE)
-#else
-	VMATH_SPLAT_8XV2_SCALAR()
-#endif // defined(VMATH_SSE41_ENABLE)
-#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
-#error ARM SIMD not implemented
-#else
-	VMATH_SPLAT_8XV2_SCALAR()
-#endif
-#undef VMATH_SPLAT_8XV2_SCALAR
 }
 
 /*
@@ -243,30 +110,10 @@ VMATH_INLINE vm_8batch_v2f_t vm_splat_8xv2f(const vm_float32_t fill)
 #include "vmath/generated/v2f/v2f_componentwise_mul.h"
 #include "vmath/generated/v2f/v2f_componentwise_sub.h"
 
-#include "vmath/generated/v2f/8xv2f_componentwise_add.h"
-#include "vmath/generated/v2f/8xv2f_componentwise_div.h"
-#include "vmath/generated/v2f/8xv2f_componentwise_mul.h"
-#include "vmath/generated/v2f/8xv2f_componentwise_sub.h"
-
-#include "vmath/generated/v2f/2xv2f_componentwise_add.h"
-#include "vmath/generated/v2f/2xv2f_componentwise_div.h"
-#include "vmath/generated/v2f/2xv2f_componentwise_mul.h"
-#include "vmath/generated/v2f/2xv2f_componentwise_sub.h"
-
 #include "vmath/generated/v2f/v2f_componentwise_constant_add.h"
 #include "vmath/generated/v2f/v2f_componentwise_constant_div.h"
 #include "vmath/generated/v2f/v2f_componentwise_constant_mul.h"
 #include "vmath/generated/v2f/v2f_componentwise_constant_sub.h"
-
-#include "vmath/generated/v2f/8xv2f_componentwise_constant_add.h"
-#include "vmath/generated/v2f/8xv2f_componentwise_constant_div.h"
-#include "vmath/generated/v2f/8xv2f_componentwise_constant_mul.h"
-#include "vmath/generated/v2f/8xv2f_componentwise_constant_sub.h"
-
-#include "vmath/generated/v2f/2xv2f_componentwise_constant_add.h"
-#include "vmath/generated/v2f/2xv2f_componentwise_constant_div.h"
-#include "vmath/generated/v2f/2xv2f_componentwise_constant_mul.h"
-#include "vmath/generated/v2f/2xv2f_componentwise_constant_sub.h"
 
 /*
  * Special operations
