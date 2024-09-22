@@ -7,6 +7,7 @@ const test_flags = &[_][]const u8{
     "-std=c99", // need inline and restrict
     "-pedantic",
     "-Wall",
+    "-Werror",
     "-Iinclude/",
     "-march=znver1", // my pc architecture
 };
@@ -32,6 +33,24 @@ pub fn build(b: *std.Build) !void {
         .install_subdir = "vmath/",
     });
 
+    var lib = b.addStaticLibrary(.{
+        .name = "vmath",
+        .optimize = optimize,
+        .target = target,
+        // TODO: figure out how to not have to link libc, needed for mm_malloc
+        // in xmmtrin but im pretty sure its not needed in theory
+        .link_libc = true,
+    });
+    lib.addCSourceFiles(.{
+        .root = b.path("src/"),
+        .files = &.{
+            "impl.c",
+            "memutil.c",
+        },
+        .flags = test_flags,
+    });
+    b.installArtifact(lib);
+
     for (test_source_files) |source_file| {
         var test_exe = b.addExecutable(.{
             .name = std.fs.path.stem(source_file),
@@ -45,7 +64,7 @@ pub fn build(b: *std.Build) !void {
             } },
             .flags = test_flags,
         });
-        test_exe.linkLibCpp();
+        test_exe.linkLibC();
         test_exe.linkSystemLibrary("check");
         try tests.append(test_exe);
     }
@@ -65,5 +84,6 @@ pub fn build(b: *std.Build) !void {
 
     try @import("templates/build.zig").generate(b, "code");
 
+    try tests.append(lib); // get intellisense for tests + lib
     zcc.createStep(b, "cdb", try tests.toOwnedSlice());
 }
