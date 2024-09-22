@@ -1,7 +1,6 @@
 #include "vmath/decl/vec2_f32.h"
 
-VMATH_INLINE vm_v2f_t vm_add_v2f_constant(const vm_v2f_t a,
-										  const vm_float32_t constant)
+VMATH_INLINE vm_v2f_t vm_addc_v2f(const vm_v2f_t a, const vm_float32_t constant)
 {
 #define VMATH_ADD_V2_SCALAR()                                                  \
 	vm_v2f_t output;                                                           \

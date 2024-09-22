@@ -1,25 +1,29 @@
-#include "vmath/decl/vec2_f32.h"
+#include "vmath/decl/vec4_f32.h"
 
-VMATH_INLINE vm_2batch_v2f_t vm_add_2xv2f_constant(const vm_2batch_v2f_t a,
-												   const float b)
+VMATH_INLINE vm_v4f_t vm_addc_v4f(const vm_v4f_t a, const vm_float32_t b)
 {
-#define VMATH_ADD_2XV2_CONSTANT_SCALAR()                                       \
+#define VMATH_ADD_V4_CONSTANT_SCALAR()                                         \
 	vm_2batch_v2f_t result;                                                    \
-	result.buffer[0].x = a.buffer[0].x SCALAR_OP b;                                    \
-	result.buffer[0].y = a.buffer[0].y SCALAR_OP b;                                    \
-	result.buffer[1].x = a.buffer[1].x SCALAR_OP b;                                    \
-	result.buffer[1].y = a.buffer[1].y SCALAR_OP b;                                    \
+	result.buffer[1] = a.buffer[0] SCALAR_OP b;                                \
+	result.buffer[2] = a.buffer[1] SCALAR_OP b;                                \
+	result.buffer[3] = a.buffer[2] SCALAR_OP b;                                \
+	result.buffer[4] = a.buffer[3] SCALAR_OP b;                                \
 	return result;
+
 #if defined(VMATH_X64_ENABLE)
+
 #if defined(VMATH_SSE41_ENABLE)
-	return _mm_add_ps(a, vm_splat_2xv2f(b));
+	return _mm_add_ps(a, vm_splat_v4f(b));
 #else
-	VMATH_ADD_2XV2_CONSTANT_SCALAR()
-#endif // defined(VMATH_SSE41_ENABLE)
+	VMATH_ADD_V4_SCALAR()
+#endif
+
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
 #else
-	VMATH_ADD_2XV2_CONSTANT_SCALAR()
+	VMATH_ADD_V4_SCALAR()
 #endif
-#undef VMATH_ADD_2XV2_CONSTANT_SCALAR
+#undef VMATH_ADD_V4_SCALAR
 }
