@@ -24,15 +24,6 @@ pub fn build(b: *std.Build) !void {
     var tests = std.ArrayList(*std.Build.Step.Compile).init(b.allocator);
     defer tests.deinit();
 
-    b.installDirectory(.{
-        .source_dir = .{ .src_path = .{
-            .sub_path = "include/vmath/",
-            .owner = b,
-        } },
-        .install_dir = .header,
-        .install_subdir = "vmath/",
-    });
-
     var lib = b.addStaticLibrary(.{
         .name = "vmath",
         .optimize = optimize,
@@ -49,6 +40,7 @@ pub fn build(b: *std.Build) !void {
         },
         .flags = test_flags,
     });
+    lib.installHeadersDirectory(b.path("include/vmath/"), "vmath", .{});
     b.installArtifact(lib);
 
     for (test_source_files) |source_file| {
