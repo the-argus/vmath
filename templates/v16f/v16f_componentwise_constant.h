@@ -1,47 +1,31 @@
-#include "vmath/decl/vec2_f32.h"
+#include "vmath/decl/vec16_f32.h"
 
-VMATH_INLINE vm_8batch_v2f_t vm_add_8xv2f_constant(const vm_8batch_v2f_t a,
-												   const float b)
+VMATH_INLINE vm_v16f_t vm_addc_v16f(const vm_v16f_t a, const vm_float32_t b)
 {
-#define VMATH_ADD_8XV2_CONSTANT_SCALAR()                                       \
-	vm_8batch_v2f_t result;                                                    \
-	result.buffer[0].x = a.buffer[0].x SCALAR_OP b;                            \
-	result.buffer[0].y = a.buffer[0].y SCALAR_OP b;                            \
-	result.buffer[1].x = a.buffer[1].x SCALAR_OP b;                            \
-	result.buffer[1].y = a.buffer[1].y SCALAR_OP b;                            \
-	result.buffer[2].x = a.buffer[2].x SCALAR_OP b;                            \
-	result.buffer[2].y = a.buffer[2].y SCALAR_OP b;                            \
-	result.buffer[3].x = a.buffer[3].x SCALAR_OP b;                            \
-	result.buffer[3].y = a.buffer[3].y SCALAR_OP b;                            \
-	result.buffer[4].x = a.buffer[4].x SCALAR_OP b;                            \
-	result.buffer[4].y = a.buffer[4].y SCALAR_OP b;                            \
-	result.buffer[5].x = a.buffer[5].x SCALAR_OP b;                            \
-	result.buffer[5].y = a.buffer[5].y SCALAR_OP b;                            \
-	result.buffer[6].x = a.buffer[6].x SCALAR_OP b;                            \
-	result.buffer[6].y = a.buffer[6].y SCALAR_OP b;                            \
-	result.buffer[7].x = a.buffer[7].x SCALAR_OP b;                            \
-	result.buffer[7].y = a.buffer[7].y SCALAR_OP b;                            \
-	return result;
-#if defined(VMATH_X64_ENABLE)
-#if defined(VMATH_SSE41_ENABLE)
 #if defined(VMATH_AVX512_GENERIC_ENABLE)
-	return _mm512_add_ps(a, vm_splat_8xv2f(b));
-#else
-	vm_8batch_v2f_t result;
-	const vm_2batch_v2f_t constants = vm_splat_2xv2f(b);
-#pragma unroll
-	for (int8_t i = 0; i < 4; ++i) {
-		result.buffer[i] = _mm_add_ps(a.buffer[i], constants);
-	}
+	return _mm512_add_ps(a, vm_splat_v16f(b));
+#elif defined(VMATH_AVX256_GENERIC_ENABLE)
+	vm_v16f_t result;
+	vm_v8f_t temp = vm_splat_v8f(b);
+	result.buffer[0] = _mm256_add_ps(a.buffer[0], temp);
+	result.buffer[1] = _mm256_add_ps(a.buffer[1], temp);
 	return result;
-#endif
-#else
-	VMATH_ADD_8XV2_CONSTANT_SCALAR()
-#endif // defined(VMATH_SSE41_ENABLE)
+#elif defined(VMATH_SSE41_ENABLE)
+	vm_v16f_t result;
+	vm_v4f_t temp = vm_splat_v4f(b);
+	result.buffer[0] = _mm_add_ps(a.buffer[0], temp);
+	result.buffer[1] = _mm_add_ps(a.buffer[1], temp);
+	result.buffer[2] = _mm_add_ps(a.buffer[2], temp);
+	result.buffer[3] = _mm_add_ps(a.buffer[3], temp);
+	return result;
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
 #else
-	VMATH_ADD_8XV2_CONSTANT_SCALAR()
+	vm_v16f_t result;
+#pragma unroll
+	for (int8_t i = 0; i < 16; ++i) {
+		result.buffer[i] = a.buffer[i] SCALAR_OP b;
+	}
+	return result;
 #endif
-#undef VMATH_ADD_8XV2_CONSTANT_SCALAR
 }

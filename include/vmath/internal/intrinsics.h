@@ -279,4 +279,9 @@
 #define VMATH_AVX256_GENERIC_ENABLE
 #endif
 
+#if defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE) ||                \
+	defined(VMATH_RISCV_V1_ENABLE) || defined(VMATH_X64_ENABLE)
+#define VMATH_SIMD_ENABLED
+#endif
+
 #endif
