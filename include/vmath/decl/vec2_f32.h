@@ -100,12 +100,12 @@ VMATH_INLINE vm_v2f_t vm_length_sqr_v2f(vm_v2f_t vec);
 
 /// Compute the length of a vec2, and then read the resulting vector out into
 /// memory, and return the X component.
-VMATH_INLINE float vm_lengthx_v2f(vm_v2f_t vec);
+VMATH_INLINE vm_float32_t vm_lengthx_v2f(vm_v2f_t vec);
 /// Compute 1 over the length of a vec2, and then read the resulting vector out
 /// into memory, and return the X component.
-VMATH_INLINE float vm_length_invx_v2f(vm_v2f_t vec);
+VMATH_INLINE vm_float32_t vm_length_invx_v2f(vm_v2f_t vec);
 /// Compute the length of a vec2, squared, and then read the resulting vector
 /// out into memory, and return the X component. Faster than finding the length
-VMATH_INLINE float vm_length_sqrx_v2f(vm_v2f_t vec);
+VMATH_INLINE vm_float32_t vm_length_sqrx_v2f(vm_v2f_t vec);
 
 #endif

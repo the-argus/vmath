@@ -146,66 +146,82 @@ VMATH_INLINE vm_v2f_t vm_splat_v2f(vm_float32_t fill)
  * Special operations
  */
 
-VMATH_INLINE float vm_length_v2f(const vm_v2f_t vec)
+VMATH_INLINE vm_v2f_t vm_length_v2f(vm_v2f_t vec)
 {
-#define VMATH_LENGTH_V2_SCALAR(argname)                                        \
-	return sqrtf(((argname).x * (argname).x) + ((argname).y * (argname).y));
-#if defined(VMATH_X64_ENABLE)
 #if defined(VMATH_SSE41_ENABLE)
 	// multiply all components
 	__m128 powd = _mm_mul_ps(vec, vec);
 	// horizontal add, x + y is stored in output x and z
 	powd = _mm_hadd_ps(powd, powd);
-	// sqrt
+	// sqrt everything, we only care about sqrt(powd[0]) though
 	powd = _mm_sqrt_ps(powd);
-	// read out first component
-	vm_float32_t readable;
-	_mm_mask_store_ps(&readable, 1, powd);
-	return readable;
-#else
-	VMATH_LENGTH_V2_SCALAR(vec)
-#endif // defined(VMATH_SSE41_ENABLE)
+	// splat 0
+	return _mm_shuffle_ps(powd, powd, _MM_SHUFFLE(0, 0, 0, 0)); // NOLINT
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
 #else
-	VMATH_LENGTH_V2_SCALAR(vec)
+	vm_float32_t value = sqrtf((vec.buffer[0] * vec.buffer[0]) +
+							   (vec.buffer[1] * vec.buffer[1]));
+	vm_v2f_t out;
+	out.buffer[0] = value;
+	out.buffer[1] = value;
+	return out;
 #endif
-#undef VMATH_LENGTH_V2_SCALAR
 }
 
-VMATH_INLINE float vm_length_inv_v2f(const vm_v2f_t vec)
+VMATH_INLINE vm_v2f_t vm_length_inv_v2f(const vm_v2f_t vec)
 {
-#define VMATH_LENGTH_INV_V2_SCALAR(argname)                                    \
-	return 1.0f /                                                              \
-		   sqrtf(((argname).x * (argname).x) + ((argname).y * (argname).y));
-#if defined(VMATH_X64_ENABLE)
 #if defined(VMATH_SSE41_ENABLE)
 	// multiply all components
 	__m128 powd = _mm_mul_ps(vec, vec);
 	// horizontal add, x + y is stored in output x and z
 	powd = _mm_hadd_ps(powd, powd);
-	// 1 / sqrt
+	// rsqrt everything, we only care about rsqrt(powd[0]) though
 	powd = _mm_rsqrt_ps(powd);
-	// read out first component
-	vm_float32_t readable;
-	_mm_mask_store_ps(&readable, 1, powd);
-	return readable;
-#else
-	VMATH_LENGTH_INV_V2_SCALAR(vec)
-#endif // defined(VMATH_SSE41_ENABLE)
+	// splat 0
+	return _mm_shuffle_ps(powd, powd, _MM_SHUFFLE(0, 0, 0, 0)); // NOLINT
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
 #else
-	VMATH_LENGTH_INV_V2_SCALAR(vec)
+	vm_float32_t value = 1.F / sqrtf((vec.buffer[0] * vec.buffer[0]) +
+									 (vec.buffer[1] * vec.buffer[1]));
+	vm_v2f_t out;
+	out.buffer[0] = value;
+	out.buffer[1] = value;
+	return out;
 #endif
-#undef VMATH_LENGTH_INV_V2_SCALAR
 }
 
-VMATH_INLINE float vm_length_sqr_v2f(const vm_v2f_t vec)
+VMATH_INLINE vm_v2f_t vm_length_sqr_v2f(vm_v2f_t vec)
 {
-#define VMATH_LENGTH_SQR_V2_SCALAR(argname)                                    \
-	return ((argname).x * (argname).x) + ((argname).y * (argname).y);
-#if defined(VMATH_X64_ENABLE)
+#if defined(VMATH_SSE41_ENABLE)
+	// multiply all components
+	__m128 powd = _mm_mul_ps(vec, vec);
+	// horizontal add, x + y is stored in output x and z
+	powd = _mm_hadd_ps(powd, powd);
+	// splat len sqred (in x) to all components
+	return _mm_shuffle_ps(powd, powd, _MM_SHUFFLE(0, 0, 0, 0)); // NOLINT
+#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
+#error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
+#else
+	vm_float32_t value =
+		(vec.buffer[0] * vec.buffer[0]) + (vec.buffer[1] * vec.buffer[1]);
+	vm_v2f_t out;
+	out.buffer[0] = value;
+	out.buffer[1] = value;
+	return out;
+#endif
+}
+
+// vm_length_v2f, except it reads out the value to a float in memory
+VMATH_INLINE vm_float32_t vm_lengthx_v2f(vm_v2f_t vec)
+{
 #if defined(VMATH_SSE41_ENABLE)
 	// TODO: benchmark and actually read the asm- is the mask store better than
 	// full store? maybe do the add w/o SIMD since its only two floats?
@@ -218,95 +234,54 @@ VMATH_INLINE float vm_length_sqr_v2f(const vm_v2f_t vec)
 	vm_float32_t readable;
 	_mm_mask_store_ps(&readable, 1, powd);
 	return readable;
-#else
-	VMATH_LENGTH_SQR_V2_SCALAR(vec)
-#endif // defined(VMATH_SSE41_ENABLE)
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
 #else
-	VMATH_LENGTH_SQR_V2_SCALAR(vec)
+	return (vec.buffer[0] * vec.buffer[0]) + (vec.buffer[1] * vec.buffer[1]);
 #endif
-#undef VMATH_LENGTH_SQR_V2_SCALAR
 }
 
-VMATH_INLINE vm_v2f_t vm_length_v2f_splat(const vm_v2f_t vec)
+VMATH_INLINE vm_float32_t vm_length_invx_v2f(vm_v2f_t vec)
 {
-#define VMATH_LENGTH_V2_SPLAT_SCALAR(argname)                                  \
-	vm_float32_t value =                                                       \
-		sqrtf(((argname).x * (argname).x) + ((argname).y * (argname).y));      \
-	return (vm_v2f_t){.x = value, .y = value};
-#if defined(VMATH_X64_ENABLE)
 #if defined(VMATH_SSE41_ENABLE)
-	// multiply all components
+	__m128 powd = _mm_mul_ps(vec, vec); // x = x^2; y = y^2
+	powd = _mm_hadd_ps(powd, powd);		// x = x + y
+	powd = _mm_rsqrt_ps(powd);			// x = 1.0 / sqrtf(x)
+	vm_float32_t readable;
+	_mm_mask_store_ps(&readable, 1, powd);
+	return readable;
+#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
+#error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
+#else
+	return 1.F / sqrtf((vec.buffer[0] * vec.buffer[0]) +
+					   (vec.buffer[1] * vec.buffer[1]));
+#endif
+}
+
+VMATH_INLINE vm_float32_t vm_length_sqrx_v2f(vm_v2f_t vec)
+{
+#if defined(VMATH_SSE41_ENABLE)
+	// TODO: this is 2 simd instructions for a thing that could be a regular
+	// float add + multiply, there's definitely a better way to do this,
+	// probably fmadd
 	__m128 powd = _mm_mul_ps(vec, vec);
 	// horizontal add, x + y is stored in output x and z
 	powd = _mm_hadd_ps(powd, powd);
-	// sqrt everything, we only care about sqrt(powd[0]) though
-	powd = _mm_sqrt_ps(powd);
-	// splat 0
-	return _mm_shuffle_ps(powd, powd, _MM_SHUFFLE(0, 0, 0, 0)); // NOLINT
-#else
-	VMATH_LENGTH_V2_SPLAT_SCALAR(vec)
-#endif // defined(VMATH_SSE41_ENABLE)
+	// read out the (x*x + y*y)
+	vm_float32_t readable;
+	_mm_mask_store_ps(&readable, 1, powd);
+	return readable;
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
 #else
-	VMATH_LENGTH_V2_SPLAT_SCALAR(vec)
+	return (vec.buffer[0] * vec.buffer[0]) + (vec.buffer[1] * vec.buffer[1]);
 #endif
-#undef VMATH_LENGTH_V2_SPLAT_SCALAR
-}
-
-VMATH_INLINE vm_v2f_t vm_length_inv_v2f_splat(const vm_v2f_t vec)
-{
-#define VMATH_LENGTH_INV_V2_SPLAT_SCALAR(argname)                              \
-	vm_float32_t value = 1.0 / sqrtf(((argname).x * (argname).x) +             \
-									 ((argname).y * (argname).y));             \
-	return (vm_v2f_t){.x = value, .y = value};
-#if defined(VMATH_X64_ENABLE)
-#if defined(VMATH_SSE41_ENABLE)
-	// multiply all components
-	__m128 powd = _mm_mul_ps(vec, vec);
-	// horizontal add, x + y is stored in output x and z
-	powd = _mm_hadd_ps(powd, powd);
-	// rsqrt everything, we only care about rsqrt(powd[0]) though
-	powd = _mm_rsqrt_ps(powd);
-	// splat 0
-	return _mm_shuffle_ps(powd, powd, _MM_SHUFFLE(0, 0, 0, 0)); // NOLINT
-#else
-	VMATH_LENGTH_INV_V2_SPLAT_SCALAR(vec)
-#endif // defined(VMATH_SSE41_ENABLE)
-#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
-#error ARM SIMD not implemented
-#else
-	VMATH_LENGTH_INV_V2_SPLAT_SCALAR(vec)
-#endif
-#undef VMATH_LENGTH_V2_SPLAT_SCALAR
-}
-
-VMATH_INLINE vm_v2f_t vm_length_sqr_v2f_splat(const vm_v2f_t vec)
-{
-	// le dot product
-#define VMATH_LENGTH_SQR_V2_SPLAT_SCALAR(argname)                              \
-	const vm_float32_t value =                                                 \
-		((argname).x * (argname).x) + ((argname).y * (argname).y);             \
-	return (vm_v2f_t){.x = value, .y = value};
-#if defined(VMATH_X64_ENABLE)
-#if defined(VMATH_SSE41_ENABLE)
-	// multiply all components
-	__m128 powd = _mm_mul_ps(vec, vec);
-	// horizontal add, x + y is stored in output x and z
-	powd = _mm_hadd_ps(powd, powd);
-	// splat len sqred (in x) to all components
-	return _mm_shuffle_ps(powd, powd, _MM_SHUFFLE(0, 0, 0, 0)); // NOLINT
-#else
-	VMATH_LENGTH_SQR_V2_SPLAT_SCALAR(vec)
-#endif // defined(VMATH_SSE41_ENABLE)
-#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
-#error ARM SIMD not implemented
-#else
-	VMATH_LENGTH_SQR_V2_SPLAT_SCALAR(vec)
-#endif
-#undef VMATH_LENGTH_SQR_V2_SPLAT_SCALAR
 }
 
 VMATH_INLINE vm_float32_t vm_vec2_f32_dot(const vm_v2fs_t a, const vm_v2fs_t b)
