@@ -70,14 +70,14 @@ VMATH_INLINE vm_2batch_v2f_t vm_splat_2xv2f(const vm_float32_t fill)
 #undef VMATH_SPLAT_2XV2_SCALAR
 }
 
-#include "vmath/generated/v2f/2xv2f_componentwise_add.h"
-#include "vmath/generated/v2f/2xv2f_componentwise_div.h"
-#include "vmath/generated/v2f/2xv2f_componentwise_mul.h"
-#include "vmath/generated/v2f/2xv2f_componentwise_sub.h"
+#include "vmath/generated/v4f/v4f_componentwise_add.h"
+#include "vmath/generated/v4f/v4f_componentwise_div.h"
+#include "vmath/generated/v4f/v4f_componentwise_mul.h"
+#include "vmath/generated/v4f/v4f_componentwise_sub.h"
 
-#include "vmath/generated/v2f/2xv2f_componentwise_constant_add.h"
-#include "vmath/generated/v2f/2xv2f_componentwise_constant_div.h"
-#include "vmath/generated/v2f/2xv2f_componentwise_constant_mul.h"
-#include "vmath/generated/v2f/2xv2f_componentwise_constant_sub.h"
+#include "vmath/generated/v4f/v4f_componentwise_constant_add.h"
+#include "vmath/generated/v4f/v4f_componentwise_constant_div.h"
+#include "vmath/generated/v4f/v4f_componentwise_constant_mul.h"
+#include "vmath/generated/v4f/v4f_componentwise_constant_sub.h"
 
 #endif

@@ -9,46 +9,38 @@ typedef struct VMATH_ALIGNED(64)
 	vm_float32_t buffer[16];
 } vm_v16fs_t;
 
-// undef-ed later
-#define VMATH_V16_SCALAR_FALLBACK()                                            \
-	typedef struct                                                             \
-	{                                                                          \
-		vm_float32_t buffer[16];                                               \
-	} vm_v16f_t;
+#if defined(VMATH_AVX512_GENERIC_ENABLE)
 
-// clang-format off
-#if defined(VMATH_X64_ENABLE)
+typedef __m512 vm_v16f_t;
 
-    #if defined(VMATH_AVX512_GENERIC_ENABLE)
-        typedef __m512 vm_v16f_t;
-    #elif defined(VMATH_AVX256_GENERIC_ENABLE)
-        // emulate 512 bits with 2x256
-        typedef struct VMATH_ALIGNED(64)
-        {
-            __m256 buffer[2];
-        } vm_v16f_t;
-    #elif defined(VMATH_SSE41_ENABLE)
-        // emulate 512 bits with 4x128
-        typedef struct VMATH_ALIGNED(64)
-        {
-            __m128 buffer[4];
-        } vm_v16f_t;
-    #else
-        VMATH_V16_SCALAR_FALLBACK()
-    #endif
+#elif defined(VMATH_AVX256_GENERIC_ENABLE)
+
+// emulate 512 bits with 2x256
+typedef struct VMATH_ALIGNED(64)
+{
+	__m256 buffer[2];
+} vm_v16f_t;
+
+#elif defined(VMATH_SSE41_ENABLE)
+
+// emulate 512 bits with 4x128
+typedef struct VMATH_ALIGNED(64)
+{
+	__m128 buffer[4];
+} vm_v16f_t;
 
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
-    #error ARM SIMD not implemented
+#error ARM SIMD not implemented
 #elif defined(VMATH_RISCV_V1_ENABLE)
-    #error RISCV vector extensions not implemented
+#error RISCV vector extensions not implemented
 #else
-    /*
-     * Scalar fallback. 32 bit machine or something
-     */
-    VMATH_V16_SCALAR_FALLBACK()()
+
+typedef struct
+{
+	vm_float32_t buffer[16];
+} vm_v16f_t;
+
 #endif
-#undef VMATH_V16_SCALAR_FALLBACK
-// clang-format on
 
 /// Load 16 contiguous floats from memory. Memory must be 64 byte aligned.
 VMATH_INLINE vm_v16f_t vm_load_v16f(const vm_v16fs_t* vec);

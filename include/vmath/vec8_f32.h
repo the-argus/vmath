@@ -91,4 +91,14 @@ VMATH_INLINE vm_v8f_t vm_splat_v8f(vm_float32_t fill)
 #endif
 }
 
+#include "vmath/generated/v8f/v8f_componentwise_add.h"
+#include "vmath/generated/v8f/v8f_componentwise_div.h"
+#include "vmath/generated/v8f/v8f_componentwise_mul.h"
+#include "vmath/generated/v8f/v8f_componentwise_sub.h"
+
+#include "vmath/generated/v8f/v8f_componentwise_constant_add.h"
+#include "vmath/generated/v8f/v8f_componentwise_constant_div.h"
+#include "vmath/generated/v8f/v8f_componentwise_constant_mul.h"
+#include "vmath/generated/v8f/v8f_componentwise_constant_sub.h"
+
 #endif
