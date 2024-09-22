@@ -8,11 +8,17 @@
 #define __VMATH_INTERNAL_INTRINSICS_H
 
 #if defined(_MSC_VER) || defined(__CODEGEARC__)
-#define VMATH_INLINE __forceinline
+#define VMATH_INLINE inline __forceinline
 #elif defined(__GNUC__)
-#define VMATH_INLINE static inline __attribute__((always_inline))
+#define VMATH_INLINE inline __attribute__((always_inline))
 #else
 #error This platform is unsupported!
+#endif
+
+// internal flag used when including decls from c impl file
+#ifdef VMATH_USE_EXTERN_INLINE
+#undef VMATH_INLINE
+#define VMATH_INLINE extern inline
 #endif
 
 #if defined(VMATH_SSE41_DISABLE) && !defined(VMATH_AVX2_DISABLE)
@@ -59,9 +65,15 @@
 #define VMATH_ARM_ENABLE
 #endif
 
-#if defined _M_ARM64
+#if defined(_M_ARM64)
 #define VMATH_ARM64_ENABLE
 #endif
+
+#if defined(__riscv) && defined(__riscv_v_intrinsic)
+#if __riscv_v_intrinsic >= 1000000
+#define VMATH_RISCV_V1_ENABLE
+#endif
+#endif // defined(__riscv) && defined(__riscv_v_intrinsic)
 
 #if defined(VMATH_X64_ENABLE) || defined(VMATH_X86_ENABLE)
 
@@ -194,6 +206,12 @@
 
 #endif // defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 
+#if defined(__riscv) && defined(__riscv_v_intrinsic)
+#if __riscv_v_intrinsic >= 1000000
+#define VMATH_RISCV_V1_ENABLE
+#endif
+#endif // defined(__riscv) && defined(__riscv_v_intrinsic)
+
 #if defined(__clang__)
 #define VMATH_CLANG_AVX2_BGR_TO_BGRA_ERROR
 #endif
@@ -252,6 +270,13 @@
 /// avx512 intrinsics
 #if defined(VMATH_AVX512BW_ENABLE) || defined(VMATH_AVX512VNNI_ENABLE)
 #define VMATH_AVX512_GENERIC_ENABLE
+#endif
+
+/// generic macro which determines if we can use __m256
+/// TODO: fix avx256 and 512 conditions for all platforms- these are not always
+/// accurate
+#if defined(VMATH_AVX2_ENABLE)
+#define VMATH_AVX256_GENERIC_ENABLE
 #endif
 
 #endif
