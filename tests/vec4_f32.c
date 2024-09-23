@@ -10,7 +10,7 @@ START_TEST(arithmetic_ops)
 		.x = .5F,
 		.y = 3.7F,
 		.z = .8F,
-		.w = 83.2f,
+		.w = 83.2F,
 	};
 	const vm_v4fs_t operand = {
 		.x = 100.F,
@@ -90,14 +90,14 @@ START_TEST(load_store)
 	vm_v4fs_t output;
 	vm_v4f_t reg = vm_load_v4f(&stored);
 	vm_store_v4f(&output, reg);
-	ck_assert_mem_eq(&output, &stored, sizeof(stored));
+	ck_assert_mem_eq(&output, &stored, sizeof(stored)); // NOLINT
 }
 END_TEST
 
 START_TEST(splat)
 {
 	const float tests[4] = {0.F, -123.645F, 987.30F, 1000000000.0000F};
-	vm_v4fs_t output;
+	vm_v4f_t output;
 
 	for (size_t i = 0; i < 4; ++i) {
 		output = vm_splat_v4f(tests[i]);
