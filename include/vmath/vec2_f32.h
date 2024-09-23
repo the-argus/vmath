@@ -44,7 +44,7 @@ VMATH_INLINE vm_v2f_t vm_loadb_v2f(const vm_float32_t vec[2])
 
 VMATH_INLINE void vm_store_v2f(vm_v2fs_t* const output, const vm_v2f_t vector)
 {
-	assert(vm_mem_is_aligned(output, 16));
+	assert(vm_mem_is_aligned(output, 8));
 
 #if defined(VMATH_SSE41_ENABLE)
 	assert((void*)&output[0].x == (void*)output);
