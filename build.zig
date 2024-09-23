@@ -8,6 +8,7 @@ const lib_flags = &[_][]const u8{
     "-pedantic",
     "-Wall",
     "-Werror",
+    "-march=znver1",
 
     // flag only for lib
     "-Iinclude/",
