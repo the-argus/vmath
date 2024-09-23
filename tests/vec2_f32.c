@@ -1,6 +1,7 @@
 #include "vmath/vec2_f32.h"
 #include "vmath/client_query.h"
 #include <check.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #define EPSILON 0.00001F
