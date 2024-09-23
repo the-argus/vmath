@@ -42,6 +42,8 @@ const char* vm_get_feature_string(void)
 #elif defined(VMATH_RISCV_V1_ENABLE)
 	return "RISCV-V V1";
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
-	return "Arm Neon"
+	return "Arm Neon";
+#else
+    return "None / Scalar Fallback";
 #endif
 }
