@@ -44,6 +44,6 @@ const char* vm_get_feature_string(void)
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 	return "Arm Neon";
 #else
-    return "None / Scalar Fallback";
+	return "None / Scalar Fallback";
 #endif
 }
