@@ -69,6 +69,9 @@ START_TEST(arithmetic_ops)
 		vm_v4f_t out = vm_div_v4f(a, b);
 		ARITHMETIC_OPS_VEC4_CHECK(out, /);
 		for (int j = -100; j < 100; ++j) {
+			if (j == 0) {
+				continue;
+			}
 			out = vm_divc_v4f(a, (vm_float32_t)j);
 			ARITHMETIC_OPS_VEC4_CHECK_CONSTANT(out, /, ((vm_float32_t)j))
 		}

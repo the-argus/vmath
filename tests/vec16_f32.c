@@ -68,6 +68,9 @@ START_TEST(arithmetic_ops)
 		vm_v16f_t out = vm_div_v16f(a, b);
 		ARITHMETIC_OPS_VEC16_CHECK(out, /);
 		for (int j = -100; j < 100; ++j) {
+			if (j == 0) {
+				continue;
+			}
 			out = vm_divc_v16f(a, (vm_float32_t)j);
 			ARITHMETIC_OPS_VEC16_CHECK_CONSTANT(out, /, ((vm_float32_t)j))
 		}

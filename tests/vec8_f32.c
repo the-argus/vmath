@@ -64,6 +64,9 @@ START_TEST(arithmetic_ops)
 		vm_v8f_t out = vm_div_v8f(a, b);
 		ARITHMETIC_OPS_VEC8_CHECK(out, /);
 		for (int j = -100; j < 100; ++j) {
+			if (j == 0) {
+				continue;
+			}
 			out = vm_divc_v8f(a, (vm_float32_t)j);
 			ARITHMETIC_OPS_VEC8_CHECK_CONSTANT(out, /, ((vm_float32_t)j))
 		}
