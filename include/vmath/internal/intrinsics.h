@@ -92,12 +92,19 @@
 							// in function _mm256_maddubs_epi16.
 #endif
 
-#if !defined(VMATH_AVX512BW_DISABLE) && _MSC_VER >= 1920
-#define VMATH_AVX512BW_ENABLE
-#endif
+// #if !defined(VMATH_AVX512BW_DISABLE) && _MSC_VER >= 1920
+// #define VMATH_AVX512BW_ENABLE
+// #endif
 
-#if !defined(VMATH_AVX512VNNI_DISABLE) && _MSC_VER >= 1924
-#define VMATH_AVX512VNNI_ENABLE
+// #if !defined(VMATH_AVX512VNNI_DISABLE) && _MSC_VER >= 1924
+// #define VMATH_AVX512VNNI_ENABLE
+// #endif
+
+/// NOTE: this msc version check may be conservative- i think versions before
+/// this probably support it. I can't find where its documented
+/// TODO: fix version num
+#if !defined(VMATH_AVX512_FOUNDATION_DISABLE) && _MSC_VER >= 1924
+#define VMATH_AVX512_FOUNDATION_ENABLE
 #endif
 
 #if !defined(VMATH_AMXBF16_DISABLE) && _MSC_VER >= 1933 && defined(_M_X64)
@@ -108,9 +115,9 @@
 #define VMATH_MASKZ_LOAD_ERROR
 #endif
 
-#if _MSC_VER < 1924
-#define VMATH_AVX512_FLOOR_CEIL_ABSENT
-#endif
+// #if _MSC_VER < 1924
+// #define VMATH_AVX512_FLOOR_CEIL_ABSENT
+// #endif
 
 #endif // defined(VMATH_X64_ENABLE) || defined(VMATH_X86_ENABLE)
 
@@ -173,18 +180,22 @@
 #endif
 
 #if !defined(__clang__) || (defined(__clang__) && __clang_major__ >= 4)
-#if !defined(VMATH_AVX512BW_DISABLE) && defined(__AVX512BW__)
-#define VMATH_AVX512BW_ENABLE
+// #if !defined(VMATH_AVX512BW_DISABLE) && defined(__AVX512BW__)
+// #define VMATH_AVX512BW_ENABLE
+// #endif
+
+// #if !defined(VMATH_AVX512VNNI_DISABLE) && defined(__AVX512VNNI__)
+// #define VMATH_AVX512VNNI_ENABLE
+// #endif
+
+#if !defined(VMATH_AVX512_FOUNDATION_DISABLE) && defined(__AVX512F__)
+#define VMATH_AVX512_FOUNDATION_ENABLE
 #endif
 
-#if !defined(VMATH_AVX512VNNI_DISABLE) && defined(__AVX512VNNI__)
-#define VMATH_AVX512VNNI_ENABLE
-#endif
-
-#if !defined(VMATH_AMXBF16_DISABLE) && defined(__AMX_TILE__) &&                \
-	defined(__AMX_INT8__) && defined(__AMX_BF16__) && defined(__AVX512BF16__)
-#define VMATH_AMXBF16_ENABLE
-#endif
+// #if !defined(VMATH_AMXBF16_DISABLE) && defined(__AMX_TILE__) &&                \
+// 	defined(__AMX_INT8__) && defined(__AMX_BF16__) && defined(__AVX512BF16__)
+// #define VMATH_AMXBF16_ENABLE
+// #endif
 #endif
 
 #endif // defined(VMATH_X86_ENABLE) || defined(VMATH_X64_ENABLE)
@@ -233,8 +244,9 @@
 #include <nmmintrin.h>
 #endif
 
-#if defined(VMATH_AVX2_ENABLE) || defined(VMATH_AVX512BW_ENABLE) ||            \
-	defined(VMATH_AVX512VNNI_ENABLE) || defined(VMATH_AMXBF16_ENABLE)
+// #if defined(VMATH_AVX2_ENABLE) || defined(VMATH_AVX512BW_ENABLE) ||            \
+// 	defined(VMATH_AVX512VNNI_ENABLE) || defined(VMATH_AMXBF16_ENABLE)
+#if defined(VMATH_AVX2_ENABLE) || defined(VMATH_AVX512_FOUNDATION_ENABLE)
 #include <immintrin.h>
 #endif
 
@@ -242,35 +254,10 @@
 #include <arm_neon.h>
 #endif
 
-#if defined(VMATH_AVX512BW_ENABLE) || defined(VMATH_AVX512VNNI_ENABLE) ||      \
-	defined(VMATH_AMXBF16_ENABLE)
-#define VMATH_ALIGN 64
-#elif defined(VMATH_AVX2_ENABLE)
-#define VMATH_ALIGN 32
-#elif defined(VMATH_SSE41_ENABLE) || defined(VMATH_NEON_ENABLE)
-#define VMATH_ALIGN 16
-#elif defined(VMATH_X64_ENABLE) || defined(VMATH_ARM64_ENABLE)
-#define VMATH_ALIGN 8
-#else
-#define VMATH_ALIGN 4
-#endif
-
-#if (defined(VMATH_AVX512BW_ENABLE) || defined(VMATH_AVX512VNNI_ENABLE) ||     \
-	 defined(VMATH_AMXBF16_ENABLE))
-#ifdef VMATH_X64_ENABLE
-#if defined(__GNUC__) || (defined(_MSC_VER) && _MSC_VER >= 1915)
-#define VMATH_ZMM_COUNT 32
-#else
-#define VMATH_ZMM_COUNT 16
-#endif
-#else
-#define VMATH_ZMM_COUNT 8
-#endif
-#endif
-
 /// generic AVX512 enable macro, determines if we can use __m512 and other
-/// avx512 intrinsics
-#if defined(VMATH_AVX512BW_ENABLE) || defined(VMATH_AVX512VNNI_ENABLE)
+/// avx512 intrinsics. atm we only use foundation instructions so this should
+/// be fine
+#if defined(VMATH_AVX512_FOUNDATION_ENABLE)
 #define VMATH_AVX512_GENERIC_ENABLE
 #endif
 
