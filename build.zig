@@ -3,14 +3,17 @@ const builtin = @import("builtin");
 const zcc = @import("compile_commands");
 const app_name = "vmath";
 
-const test_flags = &[_][]const u8{
+const lib_flags = &[_][]const u8{
     "-std=c99", // need inline and restrict
     "-pedantic",
     "-Wall",
     "-Werror",
-    "-Iinclude/",
     "-march=znver1", // my pc architecture
+    "-Iinclude/",
 };
+
+// test flags dont include "-Iinclude"
+const test_flags = lib_flags[0..(lib_flags.len - 1)];
 
 const test_source_files = &[_][]const u8{
     "vec2_f32.c",
@@ -41,7 +44,7 @@ pub fn build(b: *std.Build) !void {
             "impl.c",
             "memutil.c",
         },
-        .flags = test_flags,
+        .flags = lib_flags,
     });
     lib.installHeadersDirectory(b.path("include/vmath/"), "vmath", .{});
     b.installArtifact(lib);
@@ -61,6 +64,7 @@ pub fn build(b: *std.Build) !void {
         });
         test_exe.linkLibC();
         test_exe.linkSystemLibrary("check");
+        test_exe.linkLibrary(lib);
         try tests.append(test_exe);
     }
 
