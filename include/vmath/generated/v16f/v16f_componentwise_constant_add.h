@@ -1,5 +1,4 @@
 #include "vmath/decl/vec16_f32.h"
-#include "vmath/decl/vec8_f32.h"
 
 VMATH_INLINE vm_v16f_t vm_addc_v16f(const vm_v16f_t a, const vm_float32_t b)
 {

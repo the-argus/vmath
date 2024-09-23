@@ -1,4 +1,5 @@
 #include "vmath/vec2_f32.h"
+#include "vmath/client_query.h"
 #include <check.h>
 #include <stdlib.h>
 
@@ -206,6 +207,8 @@ Suite* vector2_f32_suite(void)
 
 int main(void)
 {
+	printf("RUNNING SIMD TESTS, COMPILED WITH SUPPORT UP TO: %s\n",
+		   vm_get_feature_string());
 	int number_failed;
 	Suite* const suite = vector2_f32_suite();
 	SRunner* const suite_runnner = srunner_create(suite);

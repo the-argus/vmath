@@ -5,6 +5,12 @@
 #include "vmath/internal/memutil.h"
 #include <assert.h>
 
+#if defined(VMATH_AVX256_GENERIC_ENABLE)
+#elif defined(VMATH_SSE41_ENABLE)
+// in this case, approximate vec8 with 2xvec4
+#include "vmath/vec4_f32.h"
+#endif
+
 VMATH_INLINE vm_v8f_t vm_load_v8f(const vm_v8fs_t* vec)
 {
 	assert(vm_mem_is_aligned(vec, 32));

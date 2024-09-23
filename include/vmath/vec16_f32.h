@@ -5,6 +5,15 @@
 #include "vmath/internal/memutil.h"
 #include <assert.h>
 
+#if defined(VMATH_AVX512_GENERIC_ENABLE)
+#elif defined(VMATH_AVX256_GENERIC_ENABLE)
+// in this case, we approximate 512 registers with 256 registers, or 2x vec8
+#include "vmath/vec8_f32.h"
+#elif defined(VMATH_SSE41_ENABLE)
+// in this case, approximate with 4xvec4
+#include "vmath/vec4_f32.h"
+#endif
+
 VMATH_INLINE vm_v16f_t vm_load_v16f(const vm_v16fs_t* vec)
 {
 	assert(vm_mem_is_aligned(vec, 64));
