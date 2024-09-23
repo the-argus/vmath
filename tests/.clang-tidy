@@ -1,4 +1,4 @@
 ---
-Checks: '-altera-unroll-loops'
+Checks: '-altera-unroll-loops,-readability-function-cognitive-complexity,-cppcoreguidelines-avoid-non-const-global-variables,-altera-id-dependent-backward-branch,-cert-msc50-cpp,-cert-msc51-cpp,-cert-msc32-c,-cert-msc30-c,-concurrency-mt-unsafe'
 InheritParentConfig: 'True'
 ...

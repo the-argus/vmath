@@ -3,6 +3,9 @@ const builtin = @import("builtin");
 
 const folders = &[_][]const u8{
     "v2f",
+    "v4f",
+    "v8f",
+    "v16f",
 };
 
 const TemplateConfig = struct {
@@ -87,10 +90,6 @@ fn generateCode(step: *std.Build.Step, prog_node: std.Progress.Node) anyerror!vo
                             try completed_stems.append(owned_key);
                         }
                     }
-
-                    const file = try directory.openFile(entry.name, std.fs.File.OpenFlags{});
-                    const contents = try file.readToEndAlloc(step.owner.allocator, 100000);
-                    defer step.owner.allocator.free(contents);
                 },
                 else => {
                     std.log.warn("Non-file {s} found in folder {s}, skipping", .{ entry.name, root });

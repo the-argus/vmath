@@ -3,16 +3,25 @@ const builtin = @import("builtin");
 const zcc = @import("compile_commands");
 const app_name = "vmath";
 
-const test_flags = &[_][]const u8{
+const lib_flags = &[_][]const u8{
     "-std=c99", // need inline and restrict
     "-pedantic",
     "-Wall",
+    "-Werror",
+    "-march=znver1",
+
+    // flag only for lib
     "-Iinclude/",
-    "-march=znver1", // my pc architecture
 };
+
+// test flags dont include "-Iinclude"
+const test_flags = lib_flags[0..(lib_flags.len - 1)];
 
 const test_source_files = &[_][]const u8{
     "vec2_f32.c",
+    "vec4_f32.c",
+    "vec8_f32.c",
+    "vec16_f32.c",
 };
 
 pub fn build(b: *std.Build) !void {
@@ -23,14 +32,24 @@ pub fn build(b: *std.Build) !void {
     var tests = std.ArrayList(*std.Build.Step.Compile).init(b.allocator);
     defer tests.deinit();
 
-    b.installDirectory(.{
-        .source_dir = .{ .src_path = .{
-            .sub_path = "include/vmath/",
-            .owner = b,
-        } },
-        .install_dir = .header,
-        .install_subdir = "vmath/",
+    var lib = b.addStaticLibrary(.{
+        .name = "vmath",
+        .optimize = optimize,
+        .target = target,
+        // TODO: figure out how to not have to link libc, needed for mm_malloc
+        // in xmmtrin but im pretty sure its not needed in theory
+        .link_libc = true,
     });
+    lib.addCSourceFiles(.{
+        .root = b.path("src/"),
+        .files = &.{
+            "impl.c",
+            "memutil.c",
+        },
+        .flags = lib_flags,
+    });
+    lib.installHeadersDirectory(b.path("include/"), "", .{});
+    b.installArtifact(lib);
 
     for (test_source_files) |source_file| {
         var test_exe = b.addExecutable(.{
@@ -45,8 +64,9 @@ pub fn build(b: *std.Build) !void {
             } },
             .flags = test_flags,
         });
-        test_exe.linkLibCpp();
+        test_exe.linkLibC();
         test_exe.linkSystemLibrary("check");
+        test_exe.linkLibrary(lib);
         try tests.append(test_exe);
     }
 
@@ -65,5 +85,6 @@ pub fn build(b: *std.Build) !void {
 
     try @import("templates/build.zig").generate(b, "code");
 
+    try tests.append(lib); // get intellisense for tests + lib
     zcc.createStep(b, "cdb", try tests.toOwnedSlice());
 }

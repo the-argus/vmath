@@ -2,18 +2,16 @@
 
 VMATH_INLINE vm_v2f_t vm_add_v2f(const vm_v2f_t a, const vm_v2f_t b)
 {
-#define VMATH_ADD_V2_SCALAR()                                                  \
-	return (vm_v2f_t){.x = a.x + b.x, .y = a.y + b.y};
-#if defined(VMATH_X64_ENABLE)
 #if defined(VMATH_SSE41_ENABLE)
 	return _mm_add_ps(a, b);
-#else
-	VMATH_ADD_V2_SCALAR()
-#endif // defined(VMATH_SSE41_ENABLE)
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
 #else
-	VMATH_ADD_V2_SCALAR()
+	vm_v2f_t output;
+	output._inner.x = a._inner.x + b._inner.x;
+	output._inner.y = a._inner.y + b._inner.y;
+	return output;
 #endif
-#undef VMATH_ADD_V2_SCALAR
 }

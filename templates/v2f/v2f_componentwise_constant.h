@@ -1,20 +1,17 @@
 #include "vmath/decl/vec2_f32.h"
 
-VMATH_INLINE vm_v2f_t vm_add_v2f_constant(const vm_v2f_t a,
-										  const vm_float32_t constant)
+VMATH_INLINE vm_v2f_t vm_addc_v2f(const vm_v2f_t a, const vm_float32_t constant)
 {
-#define VMATH_ADD_V2_SCALAR()                                                  \
-	return (vm_v2f_t){.x = a.x SCALAR_OP constant, .y = a.y SCALAR_OP constant};
-#if defined(VMATH_X64_ENABLE)
 #if defined(VMATH_SSE41_ENABLE)
 	return _mm_add_ps(a, vm_splat_v2f(constant));
-#else
-	VMATH_ADD_V2_SCALAR()
-#endif // defined(VMATH_SSE41_ENABLE)
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
 #else
-	VMATH_ADD_V2_SCALAR()
+	vm_v2f_t output;
+	output._inner.x = a._inner.x SCALAR_OP constant;
+	output._inner.y = a._inner.y SCALAR_OP constant;
+	return output;
 #endif
-#undef VMATH_ADD_V2_SCALAR
 }
