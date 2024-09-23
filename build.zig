@@ -14,6 +14,9 @@ const test_flags = &[_][]const u8{
 
 const test_source_files = &[_][]const u8{
     "vec2_f32.c",
+    "vec4_f32.c",
+    "vec8_f32.c",
+    "vec16_f32.c",
 };
 
 pub fn build(b: *std.Build) !void {

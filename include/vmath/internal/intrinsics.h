@@ -9,16 +9,18 @@
 
 #if defined(_MSC_VER) || defined(__CODEGEARC__)
 #define VMATH_INLINE inline __forceinline
+#define VMATH_INLINE_DECL inline __forceinline
 #elif defined(__GNUC__)
-#define VMATH_INLINE inline __attribute__((always_inline))
+#define VMATH_INLINE static inline __attribute__((always_inline))
+#define VMATH_INLINE_DECL static inline __attribute__((always_inline))
 #else
 #error This platform is unsupported!
 #endif
 
 // internal flag used when including decls from c impl file
 #ifdef VMATH_USE_EXTERN_INLINE
-#undef VMATH_INLINE
-#define VMATH_INLINE extern inline
+#undef VMATH_INLINE_DECL
+#define VMATH_INLINE_DECL extern inline
 #endif
 
 #if defined(VMATH_SSE41_DISABLE) && !defined(VMATH_AVX2_DISABLE)

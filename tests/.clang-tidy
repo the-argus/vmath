@@ -1,4 +1,4 @@
 ---
-Checks: '-altera-unroll-loops'
+Checks: '-altera-unroll-loops,-readability-function-cognitive-complexity,-cppcoreguidelines-avoid-non-const-global-variables,-altera-id-dependent-backward-branch'
 InheritParentConfig: 'True'
 ...
