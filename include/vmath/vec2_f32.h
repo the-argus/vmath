@@ -7,6 +7,7 @@
 
 #include "vmath/decl/vec2_f32.h"
 #include "vmath/internal/memutil.h"
+#include "vmath/vec4_f32.h"
 #include <assert.h>
 #include <math.h>
 
@@ -162,11 +163,11 @@ VMATH_INLINE vm_v2f_t vm_length_v2f(vm_v2f_t vec)
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
-	vm_float32_t value = sqrtf((vec.buffer[0] * vec.buffer[0]) +
-							   (vec.buffer[1] * vec.buffer[1]));
+	vm_float32_t value =
+		sqrtf((vec._inner.x * vec._inner.x) + (vec._inner.y * vec._inner.y));
 	vm_v2f_t out;
-	out.buffer[0] = value;
-	out.buffer[1] = value;
+	out._inner.x = value;
+	out._inner.y = value;
 	return out;
 #endif
 }
@@ -187,11 +188,11 @@ VMATH_INLINE vm_v2f_t vm_length_inv_v2f(const vm_v2f_t vec)
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
-	vm_float32_t value = 1.F / sqrtf((vec.buffer[0] * vec.buffer[0]) +
-									 (vec.buffer[1] * vec.buffer[1]));
+	vm_float32_t value = 1.F / sqrtf((vec._inner.x * vec._inner.x) +
+									 (vec._inner.y * vec._inner.y));
 	vm_v2f_t out;
-	out.buffer[0] = value;
-	out.buffer[1] = value;
+	out._inner.x = value;
+	out._inner.y = value;
 	return out;
 #endif
 }
@@ -211,10 +212,10 @@ VMATH_INLINE vm_v2f_t vm_length_sqr_v2f(vm_v2f_t vec)
 #error RISCV vector extensions not implemented
 #else
 	vm_float32_t value =
-		(vec.buffer[0] * vec.buffer[0]) + (vec.buffer[1] * vec.buffer[1]);
+		(vec._inner.x * vec._inner.x) + (vec._inner.y * vec._inner.y);
 	vm_v2f_t out;
-	out.buffer[0] = value;
-	out.buffer[1] = value;
+	out._inner.x = value;
+	out._inner.y = value;
 	return out;
 #endif
 }
@@ -239,7 +240,7 @@ VMATH_INLINE vm_float32_t vm_lengthx_v2f(vm_v2f_t vec)
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
-	return (vec.buffer[0] * vec.buffer[0]) + (vec.buffer[1] * vec.buffer[1]);
+	return (vec._inner.x * vec._inner.x) + (vec._inner.y * vec._inner.y);
 #endif
 }
 
@@ -257,8 +258,8 @@ VMATH_INLINE vm_float32_t vm_length_invx_v2f(vm_v2f_t vec)
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
-	return 1.F / sqrtf((vec.buffer[0] * vec.buffer[0]) +
-					   (vec.buffer[1] * vec.buffer[1]));
+	return 1.F /
+		   sqrtf((vec._inner.x * vec._inner.x) + (vec._inner.y * vec._inner.y));
 #endif
 }
 
@@ -280,7 +281,7 @@ VMATH_INLINE vm_float32_t vm_length_sqrx_v2f(vm_v2f_t vec)
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
-	return (vec.buffer[0] * vec.buffer[0]) + (vec.buffer[1] * vec.buffer[1]);
+	return (vec._inner.x * vec._inner.x) + (vec._inner.y * vec._inner.y);
 #endif
 }
 

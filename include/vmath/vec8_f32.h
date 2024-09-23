@@ -54,7 +54,7 @@ VMATH_INLINE void vm_store_v8f(vm_v8fs_t* output, vm_v8f_t vec)
 	// TODO: maybe faster with memcpy? check disasm
 #pragma unroll
 	for (int i = 0; i < 8; ++i) {
-		output->buffer[i] = vec->buffer[i];
+		output->buffer[i] = vec.buffer[i];
 	}
 
 #endif
@@ -84,7 +84,7 @@ VMATH_INLINE vm_v8f_t vm_splat_v8f(vm_float32_t fill)
 	vm_v8f_t out;
 #pragma unroll
 	for (int i = 0; i < 8; ++i) {
-		out->buffer[i] = fill;
+		out.buffer[i] = fill;
 	}
 	return out;
 

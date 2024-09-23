@@ -124,7 +124,7 @@ VMATH_INLINE vm_v16f_t vm_splat_v16f(vm_float32_t fill)
 	vm_v16f_t out;
 #pragma unroll
 	for (int i = 0; i < 16; ++i) {
-		out->buffer[i] = fill;
+		out.buffer[i] = fill;
 	}
 	return out;
 

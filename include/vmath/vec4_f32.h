@@ -46,10 +46,10 @@ VMATH_INLINE void vm_store_v4f(vm_v4fs_t* output, vm_v4f_t vec)
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
-	output->buffer[0] = vec.buffer[0];
-	output->buffer[1] = vec.buffer[1];
-	output->buffer[2] = vec.buffer[2];
-	output->buffer[3] = vec.buffer[3];
+	output->x = vec.buffer[0];
+	output->y = vec.buffer[1];
+	output->z = vec.buffer[2];
+	output->w = vec.buffer[3];
 #endif
 }
 
@@ -69,10 +69,10 @@ VMATH_INLINE vm_v4f_t vm_splat_v4f(vm_float32_t fill)
 #error RISCV vector extensions not implemented
 #else
 	vm_v4f_t out;
-	out->buffer[0] = fill;
-	out->buffer[1] = fill;
-	out->buffer[2] = fill;
-	out->buffer[3] = fill;
+	out.buffer[0] = fill;
+	out.buffer[1] = fill;
+	out.buffer[2] = fill;
+	out.buffer[3] = fill;
 	return out;
 #endif
 }

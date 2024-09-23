@@ -282,7 +282,7 @@
 #endif
 
 #if defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE) ||                \
-	defined(VMATH_RISCV_V1_ENABLE) || defined(VMATH_X64_ENABLE)
+	defined(VMATH_RISCV_V1_ENABLE) || defined(VMATH_SSE41_ENABLE)
 #define VMATH_SIMD_ENABLED
 #endif
 

@@ -8,7 +8,8 @@ const lib_flags = &[_][]const u8{
     "-pedantic",
     "-Wall",
     "-Werror",
-    "-march=znver1", // my pc architecture
+
+    // flag only for lib
     "-Iinclude/",
 };
 
@@ -46,7 +47,7 @@ pub fn build(b: *std.Build) !void {
         },
         .flags = lib_flags,
     });
-    lib.installHeadersDirectory(b.path("include/vmath/"), "vmath", .{});
+    lib.installHeadersDirectory(b.path("include/"), "", .{});
     b.installArtifact(lib);
 
     for (test_source_files) |source_file| {
