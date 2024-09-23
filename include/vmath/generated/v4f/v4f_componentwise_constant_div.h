@@ -10,10 +10,10 @@ VMATH_INLINE vm_v4f_t vm_divc_v4f(const vm_v4f_t a, const vm_float32_t b)
 #error RISCV vector extensions not implemented
 #else
 	vm_v4f_t result;
-	result.buffer[1] = a.buffer[0] / b;
-	result.buffer[2] = a.buffer[1] / b;
-	result.buffer[3] = a.buffer[2] / b;
-	result.buffer[4] = a.buffer[3] / b;
+	result.buffer[0] = a.buffer[0] / b;
+	result.buffer[1] = a.buffer[1] / b;
+	result.buffer[2] = a.buffer[2] / b;
+	result.buffer[3] = a.buffer[3] / b;
 	return result;
 #endif
 }

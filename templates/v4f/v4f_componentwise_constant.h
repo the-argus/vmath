@@ -10,10 +10,10 @@ VMATH_INLINE vm_v4f_t vm_addc_v4f(const vm_v4f_t a, const vm_float32_t b)
 #error RISCV vector extensions not implemented
 #else
 	vm_v4f_t result;
-	result.buffer[1] = a.buffer[0] SCALAR_OP b;
-	result.buffer[2] = a.buffer[1] SCALAR_OP b;
-	result.buffer[3] = a.buffer[2] SCALAR_OP b;
-	result.buffer[4] = a.buffer[3] SCALAR_OP b;
+	result.buffer[0] = a.buffer[0] SCALAR_OP b;
+	result.buffer[1] = a.buffer[1] SCALAR_OP b;
+	result.buffer[2] = a.buffer[2] SCALAR_OP b;
+	result.buffer[3] = a.buffer[3] SCALAR_OP b;
 	return result;
 #endif
 }
