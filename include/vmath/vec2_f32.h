@@ -166,8 +166,7 @@ VMATH_INLINE vm_v2f_t vm_length_v2f(vm_v2f_t vec)
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
-	vm_float32_t value =
-		sqrtf((vec._inner.x * vec._inner.x) + (vec._inner.y * vec._inner.y));
+	vm_float32_t value = vm_lengthx_v2f(vec);
 	vm_v2f_t out;
 	out._inner.x = value;
 	out._inner.y = value;
@@ -184,8 +183,7 @@ VMATH_INLINE vm_v2f_t vm_length_inv_v2f(const vm_v2f_t vec)
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
-	vm_float32_t value = 1.F / sqrtf((vec._inner.x * vec._inner.x) +
-									 (vec._inner.y * vec._inner.y));
+	vm_float32_t value = vm_length_invx_v2f(vec);
 	vm_v2f_t out;
 	out._inner.x = value;
 	out._inner.y = value;
@@ -204,8 +202,7 @@ VMATH_INLINE vm_v2f_t vm_length_sqr_v2f(vm_v2f_t vec)
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
-	vm_float32_t value =
-		(vec._inner.x * vec._inner.x) + (vec._inner.y * vec._inner.y);
+	vm_float32_t value = vm_length_sqrx_v2f(vec);
 	vm_v2f_t out;
 	out._inner.x = value;
 	out._inner.y = value;
@@ -224,7 +221,9 @@ VMATH_INLINE vm_float32_t vm_lengthx_v2f(vm_v2f_t vec)
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
-	return (vec._inner.x * vec._inner.x) + (vec._inner.y * vec._inner.y);
+    const double x = vec._inner.x;
+    const double y = vec._inner.y;
+	return sqrt((x * x) + (y * y));
 #endif
 }
 
@@ -237,8 +236,9 @@ VMATH_INLINE vm_float32_t vm_length_invx_v2f(vm_v2f_t vec)
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
-	return 1.F /
-		   sqrtf((vec._inner.x * vec._inner.x) + (vec._inner.y * vec._inner.y));
+    const double x = vec._inner.x;
+    const double y = vec._inner.y;
+	return 1.0 / sqrt((x * x) + (y * y));
 #endif
 }
 
@@ -251,7 +251,9 @@ VMATH_INLINE vm_float32_t vm_length_sqrx_v2f(vm_v2f_t vec)
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
-	return (vec._inner.x * vec._inner.x) + (vec._inner.y * vec._inner.y);
+    const double x = vec._inner.x;
+    const double y = vec._inner.y;
+	return (x * x) + (y * y);
 #endif
 }
 

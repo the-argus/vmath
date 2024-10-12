@@ -4,7 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define EPSILON 0.00000001F
+// accuracy required for single-precision floating length squared of {1, 1}
+#define EPSILON 0.000001F
 
 START_TEST(load_store_1x)
 {
@@ -225,7 +226,7 @@ START_TEST(length_ops)
 		ck_assert_float_eq_tol(vm_lengthx_v2f(vec), lengths[i], EPSILON);
 
 		// length inverse/reciprocal
-		if (length[i] != 0.F) {
+		if (lengths[i] != 0.F) {
 			const vm_v2f_t length_inv = vm_length_inv_v2f(vec);
 			vm_store_v2f(&out, length_inv);
 			ck_assert_float_eq_tol(out.x, 1.F / lengths[i], EPSILON);
