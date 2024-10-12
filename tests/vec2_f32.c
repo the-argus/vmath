@@ -4,8 +4,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// accuracy required for single-precision floating length squared of {1, 1}
-#define EPSILON 0.000001F
+// Epsilon: maximum allowed innaccuracy between expected and actual calculations
+#define EPSILON 0.00000000001F
+// Estimation epsilon: maximum allowed innaccuracy when using estimation
+// functions
+#define EPSILON_EST 0.001F
 
 START_TEST(load_store_1x)
 {
@@ -206,9 +209,21 @@ START_TEST(length_ops)
 		(vm_v2fs_t){.x = -934.23948F, .y = -12391.90123901F},
 	};
 
+	// baked answers to calculations
+	// not generating these with scalar ops to prevent rounding and fp related
+	// problems. these are scientific calculator approved!
 	static const vm_float32_t lengths[] = {
 		0.F,		  1.F,			1.F,		  1.414213562F,
 		1.414213562F, 1.414213562F, 1.414213562F, 12427.06803F,
+	};
+
+	static const vm_float32_t lengths_invs[] = {
+		0.F,		   1.F,			  1.F,			 0.7071067812F,
+		0.7071067812F, 0.7071067812F, 0.7071067812F, 0.00008046950398F,
+	};
+
+	static const vm_float32_t lengths_sqrs[] = {
+		0.F, 1.F, 1.F, 2.F, 2.F, 2.F, 2.F, 154432019.7F,
 	};
 
 	static const size_t num_inputs = sizeof(inputs) / sizeof(vm_v2fs_t);
@@ -227,18 +242,29 @@ START_TEST(length_ops)
 
 		// length inverse/reciprocal
 		if (lengths[i] != 0.F) {
-			const vm_v2f_t length_inv = vm_length_inv_v2f(vec);
-			vm_store_v2f(&out, length_inv);
-			ck_assert_float_eq_tol(out.x, 1.F / lengths[i], EPSILON);
-			ck_assert_float_eq_tol(vm_length_invx_v2f(vec), 1.F / lengths[i],
-								   EPSILON);
+			// standard version
+			{
+				const vm_v2f_t length_inv = vm_length_inv_v2f(vec);
+				vm_store_v2f(&out, length_inv);
+				ck_assert_float_eq_tol(out.x, lengths_invs[i], EPSILON);
+				ck_assert_float_eq_tol(vm_length_invx_v2f(vec), lengths_invs[i],
+									   EPSILON);
+			}
+			// estimation version
+			{
+				const vm_v2f_t length_inv = vm_length_inv_est_v2f(vec);
+				vm_store_v2f(&out, length_inv);
+				ck_assert_float_eq_tol(out.x, lengths_invs[i], EPSILON_EST);
+				ck_assert_float_eq_tol(vm_length_inv_estx_v2f(vec),
+									   lengths_invs[i], EPSILON_EST);
+			}
 		}
 
 		// length squared
 		const vm_v2f_t length_squared = vm_length_sqr_v2f(vec);
 		vm_store_v2f(&out, length_squared);
-		ck_assert_float_eq_tol(out.x, lengths[i] * lengths[i], EPSILON);
-		ck_assert_float_eq_tol(vm_length_sqrx_v2f(vec), lengths[i] * lengths[i],
+		ck_assert_float_eq_tol(out.x, lengths_sqrs[i], EPSILON);
+		ck_assert_float_eq_tol(vm_length_sqrx_v2f(vec), lengths_sqrs[i],
 							   EPSILON);
 	}
 }

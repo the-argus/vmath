@@ -133,6 +133,14 @@ VMATH_INLINE vm_v2f_t vm_splat_v2f(vm_float32_t fill)
 }
 
 /*
+ * Load constants
+ * TODO: global constants + regular loads, no splat
+ */
+
+VMATH_INLINE vm_v2f_t vm_load_ones_v2f(void) { return vm_splat_v2f(1.F); }
+VMATH_INLINE vm_v2f_t vm_load_zeroes_v2f(void) { return vm_splat_v2f(0.F); }
+
+/*
  * Add / subtract / multiply / divide vec2s, componentwise
  */
 
@@ -153,14 +161,7 @@ VMATH_INLINE vm_v2f_t vm_splat_v2f(vm_float32_t fill)
 VMATH_INLINE vm_v2f_t vm_length_v2f(vm_v2f_t vec)
 {
 #if defined(VMATH_SSE41_ENABLE)
-	// multiply all components
-	__m128 powd = _mm_mul_ps(vec, vec);
-	// horizontal add, x + y is stored in output x and z
-	powd = _mm_hadd_ps(powd, powd);
-	// sqrt everything, we only care about sqrt(powd[0]) though
-	powd = _mm_sqrt_ps(powd);
-	// splat 0
-	return _mm_shuffle_ps(powd, powd, _MM_SHUFFLE(0, 0, 0, 0)); // NOLINT
+	return _mm_sqrt_ps(vm_length_sqr_v2f(vec));
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
 #elif defined(VMATH_RISCV_V1_ENABLE)
@@ -175,6 +176,23 @@ VMATH_INLINE vm_v2f_t vm_length_v2f(vm_v2f_t vec)
 }
 
 VMATH_INLINE vm_v2f_t vm_length_inv_v2f(const vm_v2f_t vec)
+{
+#if defined(VMATH_SSE41_ENABLE)
+	return _mm_div_ps(vm_load_ones_v2f(), _mm_sqrt_ps(vm_length_sqr_v2f(vec)));
+#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
+#error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
+#else
+	vm_float32_t value = vm_length_invx_v2f(vec);
+	vm_v2f_t out;
+	out._inner.x = value;
+	out._inner.y = value;
+	return out;
+#endif
+}
+
+VMATH_INLINE vm_v2f_t vm_length_inv_est_v2f(const vm_v2f_t vec)
 {
 #if defined(VMATH_SSE41_ENABLE)
 	return _mm_rsqrt_ps(vm_length_sqr_v2f(vec));
@@ -221,13 +239,13 @@ VMATH_INLINE vm_float32_t vm_lengthx_v2f(vm_v2f_t vec)
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
-    const double x = vec._inner.x;
-    const double y = vec._inner.y;
+	const float x = vec._inner.x;
+	const float y = vec._inner.y;
 	return sqrt((x * x) + (y * y));
 #endif
 }
 
-VMATH_INLINE vm_float32_t vm_length_invx_v2f(vm_v2f_t vec)
+VMATH_INLINE vm_float32_t vm_length_inv_estx_v2f(vm_v2f_t vec)
 {
 #if defined(VMATH_SSE41_ENABLE)
 	return _mm_cvtss_f32(_mm_rsqrt_ps(vm_length_sqr_v2f(vec)));
@@ -236,8 +254,24 @@ VMATH_INLINE vm_float32_t vm_length_invx_v2f(vm_v2f_t vec)
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
-    const double x = vec._inner.x;
-    const double y = vec._inner.y;
+	const float x = vec._inner.x;
+	const float y = vec._inner.y;
+	return 1.0 / sqrt((x * x) + (y * y));
+#endif
+}
+
+VMATH_INLINE vm_float32_t vm_length_invx_v2f(vm_v2f_t vec)
+{
+#if defined(VMATH_SSE41_ENABLE)
+	return _mm_cvtss_f32(
+		_mm_div_ps(vm_load_ones_v2f(), _mm_sqrt_ps(vm_length_sqr_v2f(vec))));
+#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
+#error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
+#else
+	const float x = vec._inner.x;
+	const float y = vec._inner.y;
 	return 1.0 / sqrt((x * x) + (y * y));
 #endif
 }
@@ -251,8 +285,8 @@ VMATH_INLINE vm_float32_t vm_length_sqrx_v2f(vm_v2f_t vec)
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
-    const double x = vec._inner.x;
-    const double y = vec._inner.y;
+	const float x = vec._inner.x;
+	const float y = vec._inner.y;
 	return (x * x) + (y * y);
 #endif
 }

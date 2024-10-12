@@ -66,6 +66,11 @@ VMATH_INLINE_DECL void vm_store4_v2f(vm_v4fs_t* output, vm_v2f_t vector);
 /// you must provide 2x the memory.
 VMATH_INLINE_DECL void vm_storeb4_v2f(vm_float32_t output[4], vm_v2f_t vector);
 
+/// Load a constant { 1, 1 } into a vec2
+VMATH_INLINE_DECL vm_v2f_t vm_load_ones_v2f(void);
+/// Load a constant { 0, 0 } into a vec2
+VMATH_INLINE_DECL vm_v2f_t vm_load_zeroes_v2f(void);
+
 /// Load a float32 into both elements of a vec2
 VMATH_INLINE_DECL vm_v2f_t vm_splat_v2f(vm_float32_t fill);
 
@@ -94,6 +99,8 @@ VMATH_INLINE_DECL vm_v2f_t vm_length_v2f(vm_v2f_t vec);
 /// output vec2. Can keep values inside SIMD registers, which may be
 /// advantageous
 VMATH_INLINE_DECL vm_v2f_t vm_length_inv_v2f(vm_v2f_t vec);
+/// Less accurate but faster version of length_inv
+VMATH_INLINE_DECL vm_v2f_t vm_length_inv_est_v2f(vm_v2f_t vec);
 /// Compute the length of a vec2, sending it into all components of an output
 /// vec2. Can keep values inside SIMD registers, which may be advantageous
 VMATH_INLINE_DECL vm_v2f_t vm_length_sqr_v2f(vm_v2f_t vec);
@@ -104,6 +111,8 @@ VMATH_INLINE_DECL vm_float32_t vm_lengthx_v2f(vm_v2f_t vec);
 /// Compute 1 over the length of a vec2, and then read the resulting vector out
 /// into memory, and return the X component.
 VMATH_INLINE_DECL vm_float32_t vm_length_invx_v2f(vm_v2f_t vec);
+/// Less accurate but faster version of length_invx
+VMATH_INLINE_DECL vm_float32_t vm_length_inv_estx_v2f(vm_v2f_t vec);
 /// Compute the length of a vec2, squared, and then read the resulting vector
 /// out into memory, and return the X component. Faster than finding the length
 VMATH_INLINE_DECL vm_float32_t vm_length_sqrx_v2f(vm_v2f_t vec);
