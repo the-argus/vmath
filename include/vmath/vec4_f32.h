@@ -11,6 +11,7 @@
 
 VMATH_INLINE vm_v4f_t vm_load_v4f(const vm_v4fs_t* const vec)
 {
+	assert(vec);
 	assert(vm_mem_is_aligned(vec, 16));
 #if defined(VMATH_SSE41_ENABLE)
 	assert((void*)&vec->x == (void*)vec); // assert x is first in struct
@@ -31,12 +32,14 @@ VMATH_INLINE vm_v4f_t vm_load_v4f(const vm_v4fs_t* const vec)
 
 VMATH_INLINE vm_v4f_t vm_loadb_v4f(const vm_float32_t vec[4])
 {
+	assert(vec);
 	assert(sizeof(vm_float32_t[4]) == sizeof(vm_v4fs_t));
 	return vm_load_v4f((const vm_v4fs_t*)vec);
 }
 
 VMATH_INLINE void vm_store_v4f(vm_v4fs_t* output, vm_v4f_t vec)
 {
+	assert(output);
 	assert(vm_mem_is_aligned(output, 16));
 #if defined(VMATH_SSE41_ENABLE)
 	assert((void*)&output->x == (void*)output); // assert x is first in struct
@@ -55,6 +58,7 @@ VMATH_INLINE void vm_store_v4f(vm_v4fs_t* output, vm_v4f_t vec)
 
 VMATH_INLINE void vm_storeb_v4f(vm_float32_t output[4], vm_v4f_t vec)
 {
+	assert(output);
 	assert(sizeof(vm_float32_t[4]) == sizeof(vm_v4fs_t));
 	vm_store_v4f((vm_v4fs_t*)output, vec);
 }

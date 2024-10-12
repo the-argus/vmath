@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define EPSILON 0.00001F
+#define EPSILON 0.00000001F
 
 START_TEST(load_store_1x)
 {
@@ -192,6 +192,57 @@ START_TEST(arithmetic_ops_1x)
 }
 END_TEST
 
+START_TEST(length_ops)
+{
+	static const vm_v2fs_t inputs[] = {
+		(vm_v2fs_t){.x = 0, .y = 0},
+		(vm_v2fs_t){.x = 1.F, .y = 0},
+		(vm_v2fs_t){.x = -1.F, .y = 0},
+		(vm_v2fs_t){.x = 1.F, .y = 1.F},
+		(vm_v2fs_t){.x = 1.F, .y = -1.F},
+		(vm_v2fs_t){.x = -1.F, .y = 1.F},
+		(vm_v2fs_t){.x = -1.F, .y = -1.F},
+		(vm_v2fs_t){.x = -934.23948F, .y = -12391.90123901F},
+	};
+
+	static const vm_float32_t lengths[] = {
+		0.F,		  1.F,			1.F,		  1.414213562F,
+		1.414213562F, 1.414213562F, 1.414213562F, 12427.06803F,
+	};
+
+	static const size_t num_inputs = sizeof(inputs) / sizeof(vm_v2fs_t);
+	static const size_t num_lengths = sizeof(lengths) / sizeof(vm_float32_t);
+	assert(num_inputs == num_lengths);
+
+	for (size_t i = 0; i < num_inputs; ++i) {
+		const vm_v2f_t vec = vm_load_v2f(&inputs[i]);
+		vm_v2fs_t out;
+
+		// length
+		const vm_v2f_t length = vm_length_v2f(vec);
+		vm_store_v2f(&out, length);
+		ck_assert_float_eq_tol(out.x, lengths[i], EPSILON);
+		ck_assert_float_eq_tol(vm_lengthx_v2f(vec), lengths[i], EPSILON);
+
+		// length inverse/reciprocal
+		if (length[i] != 0.F) {
+			const vm_v2f_t length_inv = vm_length_inv_v2f(vec);
+			vm_store_v2f(&out, length_inv);
+			ck_assert_float_eq_tol(out.x, 1.F / lengths[i], EPSILON);
+			ck_assert_float_eq_tol(vm_length_invx_v2f(vec), 1.F / lengths[i],
+								   EPSILON);
+		}
+
+		// length squared
+		const vm_v2f_t length_squared = vm_length_sqr_v2f(vec);
+		vm_store_v2f(&out, length_squared);
+		ck_assert_float_eq_tol(out.x, lengths[i] * lengths[i], EPSILON);
+		ck_assert_float_eq_tol(vm_length_sqrx_v2f(vec), lengths[i] * lengths[i],
+							   EPSILON);
+	}
+}
+END_TEST
+
 Suite* vector2_f32_suite(void)
 {
 	Suite* const suite = suite_create("Vector2 f32");
@@ -201,6 +252,7 @@ Suite* vector2_f32_suite(void)
 	tcase_add_test(vec2, load_store_1x_malloc);
 	tcase_add_test(vec2, splat_1x);
 	tcase_add_test(vec2, arithmetic_ops_1x);
+	tcase_add_test(vec2, length_ops);
 	suite_add_tcase(suite, vec2);
 
 	return suite;

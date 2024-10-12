@@ -13,17 +13,13 @@
 
 VMATH_INLINE vm_v2f_t vm_load_v2f(const vm_v2fs_t* vec)
 {
+	assert(vec);
 	assert(vm_mem_is_aligned(vec, 8));
 
 #if defined(VMATH_SSE41_ENABLE)
 	// assert that x is at the beginning of the struct
 	assert((void*)&vec->x == (void*)vec);
-	// HACK: loading both 32 bit floats as a double. this intrinsic returns
-	// __m128d but it is being returned into a __m128. I believe this is safe
-	// according to
-	// https://stackoverflow.com/questions/67121478/load-or-shuffle-a-pair-of-floats-with-simd-intrinsics-for-doubles
-	// but this does not bring me much confidence - Ian
-	return _mm_load_sd((double*)&vec->x);
+	return _mm_castpd_ps(_mm_load_sd((const double*)&vec->x));
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
 #elif defined(VMATH_RISCV_V1_ENABLE)
@@ -37,6 +33,7 @@ VMATH_INLINE vm_v2f_t vm_load_v2f(const vm_v2fs_t* vec)
 
 VMATH_INLINE vm_v2f_t vm_loadb_v2f(const vm_float32_t vec[2])
 {
+	assert(vec);
 	assert(sizeof(vm_float32_t[2]) == sizeof(vm_v2fs_t));
 	// regular load includes alignment assert
 	return vm_load_v2f((const vm_v2fs_t*)vec);
@@ -44,6 +41,7 @@ VMATH_INLINE vm_v2f_t vm_loadb_v2f(const vm_float32_t vec[2])
 
 VMATH_INLINE void vm_store_v2f(vm_v2fs_t* const output, const vm_v2f_t vector)
 {
+	assert(output);
 	assert(vm_mem_is_aligned(output, 8));
 
 #if defined(VMATH_SSE41_ENABLE)
@@ -61,12 +59,14 @@ VMATH_INLINE void vm_store_v2f(vm_v2fs_t* const output, const vm_v2f_t vector)
 
 VMATH_INLINE void vm_storeb_v2f(vm_float32_t output[2], vm_v2f_t vector)
 {
+	assert(output);
 	assert(sizeof(vm_float32_t[2]) == sizeof(vm_v2fs_t));
 	vm_store_v2f((vm_v2fs_t*)output, vector);
 }
 
 VMATH_INLINE vm_v2f_t vm_load4_v2f(const vm_v4fs_t* vec)
 {
+	assert(vec);
 	assert(vm_mem_is_aligned(vec, 16));
 #ifdef VMATH_SIMD_ENABLED // when using simd, vec4 and vec2 are not distinct
 	return vm_load_v4f(vec);
@@ -80,6 +80,7 @@ VMATH_INLINE vm_v2f_t vm_load4_v2f(const vm_v4fs_t* vec)
 
 VMATH_INLINE vm_v2f_t vm_loadb4_v2f(const vm_float32_t vec[4])
 {
+	assert(vec);
 	assert(vm_mem_is_aligned(vec, 16));
 #ifdef VMATH_SIMD_ENABLED // when using simd, vec4 and vec2 are not distinct
 	return vm_loadb_v4f(vec);
@@ -93,6 +94,7 @@ VMATH_INLINE vm_v2f_t vm_loadb4_v2f(const vm_float32_t vec[4])
 
 VMATH_INLINE void vm_store4_v2f(vm_v4fs_t* output, vm_v2f_t vector)
 {
+	assert(output);
 	assert(vm_mem_is_aligned(output, 16));
 #ifdef VMATH_SIMD_ENABLED // when using simd, vec4 and vec2 are not distinct
 	vm_store_v4f(output, vector);
@@ -104,6 +106,7 @@ VMATH_INLINE void vm_store4_v2f(vm_v4fs_t* output, vm_v2f_t vector)
 
 VMATH_INLINE void vm_storeb4_v2f(vm_float32_t output[4], vm_v2f_t vector)
 {
+	assert(output);
 	assert(vm_mem_is_aligned(output, 16));
 #ifdef VMATH_SIMD_ENABLED // when using simd, vec4 and vec2 are not distinct
 	vm_storeb_v4f(output, vector);
@@ -175,14 +178,7 @@ VMATH_INLINE vm_v2f_t vm_length_v2f(vm_v2f_t vec)
 VMATH_INLINE vm_v2f_t vm_length_inv_v2f(const vm_v2f_t vec)
 {
 #if defined(VMATH_SSE41_ENABLE)
-	// multiply all components
-	__m128 powd = _mm_mul_ps(vec, vec);
-	// horizontal add, x + y is stored in output x and z
-	powd = _mm_hadd_ps(powd, powd);
-	// rsqrt everything, we only care about rsqrt(powd[0]) though
-	powd = _mm_rsqrt_ps(powd);
-	// splat 0
-	return _mm_shuffle_ps(powd, powd, _MM_SHUFFLE(0, 0, 0, 0)); // NOLINT
+	return _mm_rsqrt_ps(vm_length_sqr_v2f(vec));
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
 #elif defined(VMATH_RISCV_V1_ENABLE)
@@ -200,12 +196,9 @@ VMATH_INLINE vm_v2f_t vm_length_inv_v2f(const vm_v2f_t vec)
 VMATH_INLINE vm_v2f_t vm_length_sqr_v2f(vm_v2f_t vec)
 {
 #if defined(VMATH_SSE41_ENABLE)
-	// multiply all components
-	__m128 powd = _mm_mul_ps(vec, vec);
-	// horizontal add, x + y is stored in output x and z
-	powd = _mm_hadd_ps(powd, powd);
-	// splat len sqred (in x) to all components
-	return _mm_shuffle_ps(powd, powd, _MM_SHUFFLE(0, 0, 0, 0)); // NOLINT
+	// 0x3f == 0011 1111, AKA "multiply + add bottom two floats, store all the
+	// result to all four outputs
+	return _mm_dp_ps(vec, vec, 0x3f);
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
 #elif defined(VMATH_RISCV_V1_ENABLE)
@@ -224,17 +217,8 @@ VMATH_INLINE vm_v2f_t vm_length_sqr_v2f(vm_v2f_t vec)
 VMATH_INLINE vm_float32_t vm_lengthx_v2f(vm_v2f_t vec)
 {
 #if defined(VMATH_SSE41_ENABLE)
-	// TODO: benchmark and actually read the asm- is the mask store better than
-	// full store? maybe do the add w/o SIMD since its only two floats?
-
-	// multiply all components
-	__m128 powd = _mm_mul_ps(vec, vec);
-	// horizontal add, x + y is stored in output x and z
-	powd = _mm_hadd_ps(powd, powd);
-	// read out first component
-	vm_float32_t readable;
-	_mm_mask_store_ps(&readable, 1, powd);
-	return readable;
+	// dot product with self -> sqrt -> extract x component
+	return _mm_cvtss_f32(_mm_sqrt_ps(vm_length_sqr_v2f(vec)));
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
 #elif defined(VMATH_RISCV_V1_ENABLE)
@@ -247,12 +231,7 @@ VMATH_INLINE vm_float32_t vm_lengthx_v2f(vm_v2f_t vec)
 VMATH_INLINE vm_float32_t vm_length_invx_v2f(vm_v2f_t vec)
 {
 #if defined(VMATH_SSE41_ENABLE)
-	__m128 powd = _mm_mul_ps(vec, vec); // x = x^2; y = y^2
-	powd = _mm_hadd_ps(powd, powd);		// x = x + y
-	powd = _mm_rsqrt_ps(powd);			// x = 1.0 / sqrtf(x)
-	vm_float32_t readable;
-	_mm_mask_store_ps(&readable, 1, powd);
-	return readable;
+	return _mm_cvtss_f32(_mm_rsqrt_ps(vm_length_sqr_v2f(vec)));
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
 #elif defined(VMATH_RISCV_V1_ENABLE)
@@ -266,16 +245,7 @@ VMATH_INLINE vm_float32_t vm_length_invx_v2f(vm_v2f_t vec)
 VMATH_INLINE vm_float32_t vm_length_sqrx_v2f(vm_v2f_t vec)
 {
 #if defined(VMATH_SSE41_ENABLE)
-	// TODO: this is 2 simd instructions for a thing that could be a regular
-	// float add + multiply, there's definitely a better way to do this,
-	// probably fmadd
-	__m128 powd = _mm_mul_ps(vec, vec);
-	// horizontal add, x + y is stored in output x and z
-	powd = _mm_hadd_ps(powd, powd);
-	// read out the (x*x + y*y)
-	vm_float32_t readable;
-	_mm_mask_store_ps(&readable, 1, powd);
-	return readable;
+	return _mm_cvtss_f32(_mm_dp_ps(vec, vec, 0x3f));
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
 #elif defined(VMATH_RISCV_V1_ENABLE)

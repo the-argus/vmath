@@ -13,6 +13,7 @@
 
 VMATH_INLINE vm_v8f_t vm_load_v8f(const vm_v8fs_t* vec)
 {
+    assert(vec);
 	assert(vm_mem_is_aligned(vec, 32));
 #if defined(VMATH_AVX256_GENERIC_ENABLE)
 	return _mm256_load_ps(vec->buffer);
@@ -39,12 +40,14 @@ VMATH_INLINE vm_v8f_t vm_load_v8f(const vm_v8fs_t* vec)
 
 VMATH_INLINE vm_v8f_t vm_loadb_v8f(const vm_float32_t vec[8])
 {
+    assert(vec);
 	assert(sizeof(vm_float32_t[8]) == sizeof(vm_v8fs_t));
 	return vm_load_v8f((const vm_v8fs_t*)vec);
 }
 
 VMATH_INLINE void vm_store_v8f(vm_v8fs_t* output, vm_v8f_t vec)
 {
+    assert(output);
 	assert(vm_mem_is_aligned(output, 32));
 #if defined(VMATH_AVX256_GENERIC_ENABLE)
 	_mm256_store_ps(output->buffer, vec);
@@ -57,7 +60,6 @@ VMATH_INLINE void vm_store_v8f(vm_v8fs_t* output, vm_v8f_t vec)
 #error RISCV vector extensions not implemented
 #else
 
-	// TODO: maybe faster with memcpy? check disasm
 #pragma unroll
 	for (int i = 0; i < 8; ++i) {
 		output->buffer[i] = vec.buffer[i];
@@ -68,6 +70,7 @@ VMATH_INLINE void vm_store_v8f(vm_v8fs_t* output, vm_v8f_t vec)
 
 VMATH_INLINE void vm_storeb_v8f(vm_float32_t output[8], vm_v8f_t vec)
 {
+    assert(output);
 	assert(sizeof(vm_float32_t[8]) == sizeof(vm_v8fs_t));
 	vm_store_v8f((vm_v8fs_t*)output, vec);
 }

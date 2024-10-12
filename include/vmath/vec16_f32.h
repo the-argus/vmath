@@ -16,6 +16,7 @@
 
 VMATH_INLINE vm_v16f_t vm_load_v16f(const vm_v16fs_t* vec)
 {
+	assert(vec);
 	assert(vm_mem_is_aligned(vec, 64));
 
 #if defined(VMATH_AVX512_GENERIC_ENABLE)
@@ -44,7 +45,6 @@ VMATH_INLINE vm_v16f_t vm_load_v16f(const vm_v16fs_t* vec)
 #error RISCV vector extensions not implemented
 #else
 
-	// TODO: maybe memcpy better here?
 	vm_v16f_t out;
 #pragma unroll
 	for (int i = 0; i < 16; ++i) {
@@ -57,12 +57,14 @@ VMATH_INLINE vm_v16f_t vm_load_v16f(const vm_v16fs_t* vec)
 
 VMATH_INLINE vm_v16f_t vm_loadb_v16f(const vm_float32_t vec[16])
 {
+	assert(vec);
 	assert(sizeof(vm_float32_t[16]) == sizeof(vm_v16fs_t));
 	return vm_load_v16f((const vm_v16fs_t*)vec);
 }
 
 VMATH_INLINE void vm_store_v16f(vm_v16fs_t* output, vm_v16f_t vec)
 {
+	assert(output);
 	assert(vm_mem_is_aligned(output, 64));
 
 #if defined(VMATH_AVX512_GENERIC_ENABLE)
@@ -87,7 +89,6 @@ VMATH_INLINE void vm_store_v16f(vm_v16fs_t* output, vm_v16f_t vec)
 #error RISCV vector extensions not implemented
 #else
 
-	// TODO: maybe memcpy better here?
 #pragma unroll
 	for (int i = 0; i < 16; ++i) {
 		output->buffer[i] = vec.buffer[i];
@@ -98,6 +99,7 @@ VMATH_INLINE void vm_store_v16f(vm_v16fs_t* output, vm_v16f_t vec)
 
 VMATH_INLINE void vm_storeb_v16f(vm_float32_t output[16], vm_v16f_t vec)
 {
+	assert(output);
 	assert(sizeof(vm_float32_t[16]) == sizeof(vm_v16fs_t));
 	vm_store_v16f((vm_v16fs_t*)output, vec);
 }
