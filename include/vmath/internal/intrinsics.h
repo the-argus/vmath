@@ -254,6 +254,10 @@
 #include <arm_neon.h>
 #endif
 
+#if defined(VMATH_AVX2_ENABLE)
+#define VMATH_FMA3_ENABLE
+#endif
+
 /// generic AVX512 enable macro, determines if we can use __m512 and other
 /// avx512 intrinsics. atm we only use foundation instructions so this should
 /// be fine
@@ -271,6 +275,24 @@
 #if defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE) ||                \
 	defined(VMATH_RISCV_V1_ENABLE) || defined(VMATH_SSE41_ENABLE)
 #define VMATH_SIMD_ENABLED
+#endif
+
+// TODO: other compilers for svml
+#if defined(VMATH_SSE41_ENABLE) && defined(_MSC_VER) && (_MSC_VER >= 1920) &&  \
+	!defined(__clang__) && !defined(VMATH_DISABLE_SVML_INTRINSICS)
+#define VMATH_SVML_INTRINSICS_ENABLED
+#endif
+
+/*
+ * intrinsics with fallback
+ */
+
+#if defined(VMATH_FMA3_ENABLE)
+#define VMATH_FMADD_PS(a, b, c) _mm_fmadd_ps((a), (b), (c))
+#define VMATH_FNMADD_PS(a, b, c) _mm_fnmadd_ps((a), (b), (c))
+#else
+#define VMATH_FMADD_PS(a, b, c) _mm_add_ps(_mm_mul_ps((a), (b)), (c))
+#define VMATH_FNMADD_PS(a, b, c) _mm_sub_ps((c), _mm_mul_ps((a), (b)))
 #endif
 
 #endif

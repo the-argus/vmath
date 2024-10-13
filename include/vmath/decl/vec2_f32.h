@@ -32,6 +32,8 @@ typedef struct
 } vm_v2f_t;
 #endif
 
+struct vm_transform2df_t;
+
 /// Load a vec2 from memory. Memory must be 8-byte aligned.
 VMATH_INLINE_DECL vm_v2f_t vm_load_v2f(const vm_v2fs_t* vec);
 /// Load a vec2 from memory as a float buffer. Memory must be 8-byte aligned.
@@ -73,6 +75,12 @@ VMATH_INLINE_DECL vm_v2f_t vm_load_zeroes_v2f(void);
 
 /// Load a float32 into both elements of a vec2
 VMATH_INLINE_DECL vm_v2f_t vm_splat_v2f(vm_float32_t fill);
+
+/// Convert a vector4 to a vector2 by removing the last two elements
+VMATH_INLINE_DECL vm_v2f_t vm_shave4_v2f(vm_v4f_t vec);
+
+// Extract the first element of a vector
+VMATH_INLINE_DECL vm_float32_t vm_extract_x_v2f(vm_v2f_t vec);
 
 /// Add two vec2s together, componentwise
 VMATH_INLINE_DECL vm_v2f_t vm_add_v2f(vm_v2f_t a, vm_v2f_t b);
@@ -116,5 +124,16 @@ VMATH_INLINE_DECL vm_float32_t vm_length_inv_estx_v2f(vm_v2f_t vec);
 /// Compute the length of a vec2, squared, and then read the resulting vector
 /// out into memory, and return the X component. Faster than finding the length
 VMATH_INLINE_DECL vm_float32_t vm_length_sqrx_v2f(vm_v2f_t vec);
+
+VMATH_INLINE_DECL vm_v2f_t vm_dot_v2f(vm_v2f_t vec1, vm_v2f_t vec2);
+VMATH_INLINE_DECL vm_v2f_t vm_distance_v2f(vm_v2f_t vec1, vm_v2f_t vec2);
+VMATH_INLINE_DECL vm_v2f_t vm_distance_sqr_v2f(vm_v2f_t vec1, vm_v2f_t vec2);
+VMATH_INLINE_DECL vm_v2f_t vm_angle_v2f(vm_v2f_t vec1, vm_v2f_t vec2);
+VMATH_INLINE_DECL vm_v2f_t vm_normalize_v2f(vm_v2f_t vec);
+VMATH_INLINE_DECL vm_v2f_t vm_lerp_v2f(vm_v2f_t vec1, vm_v2f_t vec2, vm_v2f_t amount);
+VMATH_INLINE_DECL vm_v2f_t vm_reflect_v2f(vm_v2f_t vec, vm_v2f_t normal);
+VMATH_INLINE_DECL vm_v2f_t vm_move_towards_v2f(vm_v2f_t vec, vm_v2f_t target, vm_v2f_t max_distance);
+VMATH_INLINE_DECL vm_v2f_t vm_clamp_axes_v2f(vm_v2f_t vec, vm_v2f_t min, vm_v2f_t max);
+VMATH_INLINE_DECL vm_v2f_t vm_clamp_magnitude_v2f(vm_v2f_t vec, vm_v2f_t range);
 
 #endif

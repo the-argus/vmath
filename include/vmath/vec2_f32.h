@@ -212,9 +212,7 @@ VMATH_INLINE vm_v2f_t vm_length_inv_est_v2f(const vm_v2f_t vec)
 VMATH_INLINE vm_v2f_t vm_length_sqr_v2f(vm_v2f_t vec)
 {
 #if defined(VMATH_SSE41_ENABLE)
-	// 0x3f == 0011 1111, AKA "multiply + add bottom two floats, store all the
-	// result to all four outputs
-	return _mm_dp_ps(vec, vec, 0x3f);
+	return vm_dot_v2f(vec, vec);
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
 #elif defined(VMATH_RISCV_V1_ENABLE)
@@ -279,7 +277,7 @@ VMATH_INLINE vm_float32_t vm_length_invx_v2f(vm_v2f_t vec)
 VMATH_INLINE vm_float32_t vm_length_sqrx_v2f(vm_v2f_t vec)
 {
 #if defined(VMATH_SSE41_ENABLE)
-	return _mm_cvtss_f32(_mm_dp_ps(vec, vec, 0x3f));
+	return _mm_cvtss_f32(vm_dot_v2f(vec, vec));
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
 #elif defined(VMATH_RISCV_V1_ENABLE)
@@ -290,6 +288,86 @@ VMATH_INLINE vm_float32_t vm_length_sqrx_v2f(vm_v2f_t vec)
 	return (x * x) + (y * y);
 #endif
 }
+
+VMATH_INLINE vm_v2f_t vm_shave4_v2f(vm_v4f_t vec)
+{
+#if defined(VMATH_SSE41_ENABLE)
+	// top elements contents are undefined, we dont need to zero them
+	return vec;
+#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
+#error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
+#else
+	vm_v2f_t out;
+	out._inner.x = vec._inner.x;
+	out._inner.y = vec._inner.y;
+	return out;
+#endif
+}
+
+VMATH_INLINE vm_float32_t vm_extract_x_v2f(vm_v2f_t vec)
+{
+#if defined(VMATH_SSE41_ENABLE)
+	return _mm_cvtss_f32(vec);
+#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
+#error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
+#else
+	return vec._inner.x;
+#endif
+}
+
+VMATH_INLINE vm_v2f_t vm_dot_v2f(vm_v2f_t vec1, vm_v2f_t vec2)
+{
+#if defined(VMATH_SSE41_ENABLE)
+	// 0x3f == 0011 1111, AKA "multiply + add bottom two floats, store all the
+	// result to all four outputs
+	return _mm_dp_ps(vec1, vec2, 0x3f);
+#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
+#error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
+#else
+	vm_float32_t value =
+		(vec1._inner.x * vec2._inner.x) + (vec1._inner.y * vec2._inner.y);
+	vm_v2f_t out;
+	out._inner.x = value;
+	out._inner.y = value;
+	return out;
+#endif
+}
+
+VMATH_INLINE vm_v2f_t vm_distance_v2f(vm_v2f_t vec1, vm_v2f_t vec2)
+{
+	return vm_length_v2f(vm_sub_v2f(vec2, vec1));
+}
+
+VMATH_INLINE vm_v2f_t vm_distance_sqr_v2f(vm_v2f_t vec1, vm_v2f_t vec2)
+{
+	return vm_length_sqr_v2f(vm_sub_v2f(vec2, vec1));
+}
+
+VMATH_INLINE vm_v2f_t vm_angle_v2f(vm_v2f_t vec1, vm_v2f_t vec2)
+{
+	// TODO: vector atan2... polynomial approximation :(
+	assert(0);
+}
+
+VMATH_INLINE vm_v2f_t vm_normalize_v2f(vm_v2f_t vec)
+{
+
+}
+
+VMATH_INLINE vm_v2f_t vm_lerp_v2f(vm_v2f_t vec1, vm_v2f_t vec2,
+								  vm_v2f_t amount);
+VMATH_INLINE vm_v2f_t vm_reflect_v2f(vm_v2f_t vec, vm_v2f_t normal);
+VMATH_INLINE vm_v2f_t vm_move_towards_v2f(vm_v2f_t vec, vm_v2f_t target,
+										  vm_v2f_t max_distance);
+VMATH_INLINE vm_v2f_t vm_clamp_axes_v2f(vm_v2f_t vec, vm_v2f_t min,
+										vm_v2f_t max);
+VMATH_INLINE vm_v2f_t vm_clamp_magnitude_v2f(vm_v2f_t vec, vm_v2f_t range);
 
 VMATH_INLINE vm_float32_t vm_vec2_f32_dot(const vm_v2fs_t a, const vm_v2fs_t b)
 {

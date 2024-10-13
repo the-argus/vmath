@@ -21,10 +21,6 @@ typedef __m128 vm_v4f_t;
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
-
-/*
- * Scalar fallback. 32 bit machine or something
- */
 typedef struct VMATH_ALIGNED(16)
 {
 	vm_float32_t buffer[4];
