@@ -19,8 +19,11 @@ typedef struct
 
 typedef struct
 {
+	/// Private implementation detail
 	vm_v3f_t _r1;
+	/// Private implementation detail
 	vm_v3f_t _r2;
+	/// Private implementation detail
 	vm_v3f_t _r3;
 } vm_mat3x3f_t;
 
@@ -40,7 +43,7 @@ VMATH_INLINE_DECL void vm_storeb_mat3x3f(vm_float32_t output[9],
 /// Load the identity transform into registers
 VMATH_INLINE_DECL vm_mat3x3f_t vm_load_identity_mat3x3f(void);
 
-/// Create a matrix describing a rotation of some degrees in radians
+/// Create a matrix describing a rotation in radians
 VMATH_INLINE_DECL vm_mat3x3f_t vm_load_rotation_mat3x3f(vm_float32_t theta);
 
 /// Create a transform describing a translation along local X and Y axes
@@ -55,7 +58,7 @@ VMATH_INLINE_DECL vm_mat3x3f_t vm_load_scale_mat3x3f(vm_float32_t x,
 													 vm_float32_t y);
 /// Create a transform describing a scaling along local X and Y axes, vector
 /// variant
-VMATH_INLINE_DECL vm_mat3x3f_t vm_load_scalev_mat3x3f(vm_v2f_t offset);
+VMATH_INLINE_DECL vm_mat3x3f_t vm_load_scalev_mat3x3f(vm_v2f_t scale);
 
 /// Multiply two 3x3 matrices
 VMATH_INLINE_DECL vm_mat3x3f_t vm_mul_mat3x3f(vm_mat3x3f_t a, vm_mat3x3f_t b);

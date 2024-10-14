@@ -32,7 +32,7 @@ VMATH_INLINE_DECL void vm_store_transform2df(vm_transform2dfs_t* output,
 /// Load the identity transform into registers
 VMATH_INLINE_DECL vm_transform2df_t vm_load_identity_transform2df(void);
 
-/// Create a transform describing a rotation of some degrees in radians
+/// Create a transform describing a rotation in radians
 VMATH_INLINE_DECL vm_transform2df_t
 vm_load_rotation_transform2df(vm_float32_t theta);
 
