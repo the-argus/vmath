@@ -9,7 +9,7 @@
 #include "vmath/decl/vec4_f32.h"
 #include "vmath/internal/intrinsics.h"
 
-typedef struct VMATH_ALIGNED(16) // NOLINT
+typedef struct
 {
 	vm_v4fs_t basis;
 	vm_v2fs_t offset;

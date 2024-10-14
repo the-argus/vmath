@@ -1,6 +1,6 @@
-#include "vmath/decl/vec4_f32.h"
+#include "vmath/decl/vec3_f32.h"
 
-VMATH_INLINE vm_v4f_t vm_add_v4f(const vm_v4f_t a, const vm_v4f_t b)
+VMATH_INLINE vm_v3f_t vm_add_v3f(const vm_v3f_t a, const vm_v3f_t b)
 {
 #if defined(VMATH_SSE41_ENABLE)
 	return _mm_add_ps(a, b);
@@ -10,10 +10,9 @@ VMATH_INLINE vm_v4f_t vm_add_v4f(const vm_v4f_t a, const vm_v4f_t b)
 #error RISCV vector extensions not implemented
 #else
 	vm_v4f_t result;
-	result._inner.x = a._inner.x + b._inner.x;
-	result._inner.y = a._inner.y + b._inner.y;
-	result._inner.z = a._inner.z + b._inner.z;
-	result._inner.w = a._inner.w + b._inner.w;
+	result._inner.x = a._inner.x SCALAR_OP b._inner.x;
+	result._inner.y = a._inner.y SCALAR_OP b._inner.y;
+	result._inner.z = a._inner.z SCALAR_OP b._inner.z;
 	return result;
 #endif
 }

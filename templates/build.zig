@@ -3,6 +3,7 @@ const builtin = @import("builtin");
 
 const folders = &[_][]const u8{
     "v2f",
+    "v3f",
     "v4f",
     "v8f",
     "v16f",
