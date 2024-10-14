@@ -6,15 +6,12 @@
 #define __VMATH_VEC2_F32_H
 
 #include "vmath/decl/vec2_f32.h"
-#include "vmath/internal/memutil.h"
-#include "vmath/vec4_f32.h"
 #include <assert.h>
 #include <math.h>
 
 VMATH_INLINE vm_v2f_t vm_load_v2f(const vm_v2fs_t* vec)
 {
 	assert(vec);
-	assert(vm_mem_is_aligned(vec, 8));
 
 #if defined(VMATH_SSE41_ENABLE)
 	// assert that x is at the beginning of the struct
@@ -42,12 +39,10 @@ VMATH_INLINE vm_v2f_t vm_loadb_v2f(const vm_float32_t vec[2])
 VMATH_INLINE void vm_store_v2f(vm_v2fs_t* const output, const vm_v2f_t vector)
 {
 	assert(output);
-	assert(vm_mem_is_aligned(output, 8));
-
 #if defined(VMATH_SSE41_ENABLE)
 	assert((void*)&output[0].x == (void*)output);
 	// HACK: storing both 32 bit floats as a double. see vm_load_v2f
-	_mm_store_sd((double*)&output->x, vector);
+	_mm_store_sd((double*)&output->x, _mm_castps_pd(vector));
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
 #elif defined(VMATH_RISCV_V1_ENABLE)
@@ -62,58 +57,6 @@ VMATH_INLINE void vm_storeb_v2f(vm_float32_t output[2], vm_v2f_t vector)
 	assert(output);
 	assert(sizeof(vm_float32_t[2]) == sizeof(vm_v2fs_t));
 	vm_store_v2f((vm_v2fs_t*)output, vector);
-}
-
-VMATH_INLINE vm_v2f_t vm_load4_v2f(const vm_v4fs_t* vec)
-{
-	assert(vec);
-	assert(vm_mem_is_aligned(vec, 16));
-#ifdef VMATH_SIMD_ENABLED // when using simd, vec4 and vec2 are not distinct
-	return vm_load_v4f(vec);
-#else
-	vm_v2f_t out;
-	out._inner.x = vec->x;
-	out._inner.y = vec->y;
-	return out;
-#endif
-}
-
-VMATH_INLINE vm_v2f_t vm_loadb4_v2f(const vm_float32_t vec[4])
-{
-	assert(vec);
-	assert(vm_mem_is_aligned(vec, 16));
-#ifdef VMATH_SIMD_ENABLED // when using simd, vec4 and vec2 are not distinct
-	return vm_loadb_v4f(vec);
-#else
-	vm_v2f_t out;
-	out._inner.x = vec[0];
-	out._inner.y = vec[1];
-	return out;
-#endif
-}
-
-VMATH_INLINE void vm_store4_v2f(vm_v4fs_t* output, vm_v2f_t vector)
-{
-	assert(output);
-	assert(vm_mem_is_aligned(output, 16));
-#ifdef VMATH_SIMD_ENABLED // when using simd, vec4 and vec2 are not distinct
-	vm_store_v4f(output, vector);
-#else
-	output->x = vector._inner.x;
-	output->y = vector._inner.y;
-#endif
-}
-
-VMATH_INLINE void vm_storeb4_v2f(vm_float32_t output[4], vm_v2f_t vector)
-{
-	assert(output);
-	assert(vm_mem_is_aligned(output, 16));
-#ifdef VMATH_SIMD_ENABLED // when using simd, vec4 and vec2 are not distinct
-	vm_storeb_v4f(output, vector);
-#else
-	output[0] = vector._inner.x;
-	output[1] = vector._inner.y;
-#endif
 }
 
 VMATH_INLINE vm_v2f_t vm_splat_v2f(vm_float32_t fill)
@@ -355,10 +298,7 @@ VMATH_INLINE vm_v2f_t vm_angle_v2f(vm_v2f_t vec1, vm_v2f_t vec2)
 	assert(0);
 }
 
-VMATH_INLINE vm_v2f_t vm_normalize_v2f(vm_v2f_t vec)
-{
-
-}
+VMATH_INLINE vm_v2f_t vm_normalize_v2f(vm_v2f_t vec) {}
 
 VMATH_INLINE vm_v2f_t vm_lerp_v2f(vm_v2f_t vec1, vm_v2f_t vec2,
 								  vm_v2f_t amount);

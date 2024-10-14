@@ -2,41 +2,29 @@
 #define __VMATH_VEC16_F32_H
 
 #include "vmath/decl/vec16_f32.h"
-#include "vmath/internal/memutil.h"
 #include <assert.h>
-
-#if defined(VMATH_AVX512_GENERIC_ENABLE)
-#elif defined(VMATH_AVX256_GENERIC_ENABLE)
-// in this case, we approximate 512 registers with 256 registers, or 2x vec8
-#include "vmath/vec8_f32.h"
-#elif defined(VMATH_SSE41_ENABLE)
-// in this case, approximate with 4xvec4
-#include "vmath/vec4_f32.h"
-#endif
 
 VMATH_INLINE vm_v16f_t vm_load_v16f(const vm_v16fs_t* vec)
 {
 	assert(vec);
-	assert(vm_mem_is_aligned(vec, 64));
-
 #if defined(VMATH_AVX512_GENERIC_ENABLE)
 
-	return _mm512_load_ps(vec->buffer);
+	return _mm512_loadu_ps(vec->buffer);
 
 #elif defined(VMATH_AVX256_GENERIC_ENABLE)
 
 	vm_v16f_t out;
-	out.buffer[0] = _mm256_load_ps(vec->buffer);
-	out.buffer[1] = _mm256_load_ps(vec->buffer + 8);
+	out.buffer[0] = _mm256_loadu_ps(vec->buffer);
+	out.buffer[1] = _mm256_loadu_ps(vec->buffer + 8);
 	return out;
 
 #elif defined(VMATH_SSE41_ENABLE)
 
 	vm_v16f_t out;
-	out.buffer[0] = _mm_load_ps(vec->buffer);
-	out.buffer[1] = _mm_load_ps(vec->buffer + 4);
-	out.buffer[2] = _mm_load_ps(vec->buffer + 8);
-	out.buffer[3] = _mm_load_ps(vec->buffer + 12);
+	out.buffer[0] = _mm_loadu_ps(vec->buffer);
+	out.buffer[1] = _mm_loadu_ps(vec->buffer + 4);
+	out.buffer[2] = _mm_loadu_ps(vec->buffer + 8);
+	out.buffer[3] = _mm_loadu_ps(vec->buffer + 12);
 	return out;
 
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
@@ -65,23 +53,21 @@ VMATH_INLINE vm_v16f_t vm_loadb_v16f(const vm_float32_t vec[16])
 VMATH_INLINE void vm_store_v16f(vm_v16fs_t* output, vm_v16f_t vec)
 {
 	assert(output);
-	assert(vm_mem_is_aligned(output, 64));
-
 #if defined(VMATH_AVX512_GENERIC_ENABLE)
 
-	_mm512_store_ps(output, vec);
+	_mm512_storeu_ps(output, vec);
 
 #elif defined(VMATH_AVX256_GENERIC_ENABLE)
 
-	_mm256_store_ps(output->buffer, vec.buffer[0]);
-	_mm256_store_ps(output->buffer + 8, vec.buffer[1]);
+	_mm256_storeu_ps(output->buffer, vec.buffer[0]);
+	_mm256_storeu_ps(output->buffer + 8, vec.buffer[1]);
 
 #elif defined(VMATH_SSE41_ENABLE)
 
-	_mm_store_ps(output->buffer, vec.buffer[0]);
-	_mm_store_ps(output->buffer + 4, vec.buffer[1]);
-	_mm_store_ps(output->buffer + 8, vec.buffer[2]);
-	_mm_store_ps(output->buffer + 12, vec.buffer[3]);
+	_mm_storeu_ps(output->buffer, vec.buffer[0]);
+	_mm_storeu_ps(output->buffer + 4, vec.buffer[1]);
+	_mm_storeu_ps(output->buffer + 8, vec.buffer[2]);
+	_mm_storeu_ps(output->buffer + 12, vec.buffer[3]);
 
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented

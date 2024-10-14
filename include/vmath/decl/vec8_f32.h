@@ -4,7 +4,7 @@
 #include "vmath/internal/intrinsics.h"
 #include "vmath/internal/stdfloat.h"
 
-typedef struct VMATH_ALIGNED(32)
+typedef struct
 {
 	vm_float32_t buffer[8];
 } vm_v8fs_t;
@@ -26,23 +26,20 @@ typedef struct
 #error RISCV vector extensions not implemented
 #else
 
-typedef struct VMATH_ALIGNED(32)
+typedef struct
 {
 	vm_float32_t buffer[8];
 } vm_v8f_t;
 
 #endif
 
-/// Load 8 contiguous float32s from memory. Memory must be 32-byte aligned.
+/// Load 8 contiguous float32s from memory.
 VMATH_INLINE_DECL vm_v8f_t vm_load_v8f(const vm_v8fs_t* vec);
 /// Load 8 contiguous float32s from memory, float buffer instead of vector type.
-/// Memory must be 32-byte aligned.
 VMATH_INLINE_DECL vm_v8f_t vm_loadb_v8f(const vm_float32_t vec[8]);
 /// Store 8 contiguous float32s to memory.
-/// Memory must be 32-byte aligned.
 VMATH_INLINE_DECL void vm_store_v8f(vm_v8fs_t* output, vm_v8f_t vec);
 /// Store 8 contiguous float32s to memory, directly to a float buffer.
-/// Memory must be 32-byte aligned.
 VMATH_INLINE_DECL void vm_storeb_v8f(vm_float32_t output[8], vm_v8f_t vec);
 
 /// Load a float32 into all elements of a vec8

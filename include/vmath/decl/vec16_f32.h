@@ -4,7 +4,7 @@
 #include "vmath/internal/intrinsics.h"
 #include "vmath/internal/stdfloat.h"
 
-typedef struct VMATH_ALIGNED(64)
+typedef struct
 {
 	vm_float32_t buffer[16];
 } vm_v16fs_t;
@@ -16,7 +16,7 @@ typedef __m512 vm_v16f_t;
 #elif defined(VMATH_AVX256_GENERIC_ENABLE)
 
 // emulate 512 bits with 2x256
-typedef struct VMATH_ALIGNED(64)
+typedef struct
 {
 	__m256 buffer[2];
 } vm_v16f_t;
@@ -24,7 +24,7 @@ typedef struct VMATH_ALIGNED(64)
 #elif defined(VMATH_SSE41_ENABLE)
 
 // emulate 512 bits with 4x128
-typedef struct VMATH_ALIGNED(64)
+typedef struct
 {
 	__m128 buffer[4];
 } vm_v16f_t;
@@ -42,15 +42,13 @@ typedef struct
 
 #endif
 
-/// Load 16 contiguous floats from memory. Memory must be 64 byte aligned.
+/// Load 16 contiguous floats from memory.
 VMATH_INLINE_DECL vm_v16f_t vm_load_v16f(const vm_v16fs_t* vec);
-/// Load 16 contiguous floats from memory as a buffer of floats. Memory must be
-/// 64 byte aligned.
+/// Load 16 contiguous floats from memory as a buffer of floats.
 VMATH_INLINE_DECL vm_v16f_t vm_loadb_v16f(const vm_float32_t vec[16]);
-/// Store 8 contiguous vec2s to memory. Memory must be 64 byte aligned.
+/// Store 8 contiguous vec2s to memory.
 VMATH_INLINE_DECL void vm_store_v16f(vm_v16fs_t* output, vm_v16f_t vec);
-/// Store 8 contiguous vec2s to memory as a buffer of floats. Memory must be 64
-/// byte aligned.
+/// Store 8 contiguous vec2s to memory as a buffer of floats.
 VMATH_INLINE_DECL void vm_storeb_v16f(vm_float32_t output[16], vm_v16f_t vec);
 
 /// Load a float32 into all elements of a 16 element vector

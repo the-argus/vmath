@@ -6,26 +6,24 @@
 #define __VMATH_VEC4_F32_H
 
 #include "vmath/decl/vec4_f32.h"
-#include "vmath/internal/memutil.h"
 #include <assert.h>
 
 VMATH_INLINE vm_v4f_t vm_load_v4f(const vm_v4fs_t* const vec)
 {
 	assert(vec);
-	assert(vm_mem_is_aligned(vec, 16));
 #if defined(VMATH_SSE41_ENABLE)
 	assert((void*)&vec->x == (void*)vec); // assert x is first in struct
-	return _mm_load_ps(&vec->x);
+	return _mm_loadu_ps(&vec->x);
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
 	vm_v4f_t result;
-	result.buffer[0] = vec->x;
-	result.buffer[1] = vec->y;
-	result.buffer[2] = vec->z;
-	result.buffer[3] = vec->w;
+	result._inner.x = vec->x;
+	result._inner.y = vec->y;
+	result._inner.z = vec->z;
+	result._inner.w = vec->w;
 	return result;
 #endif
 }
@@ -40,19 +38,18 @@ VMATH_INLINE vm_v4f_t vm_loadb_v4f(const vm_float32_t vec[4])
 VMATH_INLINE void vm_store_v4f(vm_v4fs_t* output, vm_v4f_t vec)
 {
 	assert(output);
-	assert(vm_mem_is_aligned(output, 16));
 #if defined(VMATH_SSE41_ENABLE)
 	assert((void*)&output->x == (void*)output); // assert x is first in struct
-	_mm_store_ps(&output->x, vec);
+	_mm_storeu_ps(&output->x, vec);
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
-	output->x = vec.buffer[0];
-	output->y = vec.buffer[1];
-	output->z = vec.buffer[2];
-	output->w = vec.buffer[3];
+	output->x = vec._inner.x;
+	output->y = vec._inner.y;
+	output->z = vec._inner.z;
+	output->w = vec._inner.w;
 #endif
 }
 
@@ -73,10 +70,10 @@ VMATH_INLINE vm_v4f_t vm_splat_v4f(vm_float32_t fill)
 #error RISCV vector extensions not implemented
 #else
 	vm_v4f_t out;
-	out.buffer[0] = fill;
-	out.buffer[1] = fill;
-	out.buffer[2] = fill;
-	out.buffer[3] = fill;
+	out._inner.x = fill;
+	out._inner.y = fill;
+	out._inner.z = fill;
+	out._inner.w = fill;
 	return out;
 #endif
 }

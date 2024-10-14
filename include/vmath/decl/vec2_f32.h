@@ -1,22 +1,17 @@
 /*
- * A wrapper around vec4. It is only a distinct type from vec2 when using scalar
+ * 2-Element Vector
+ * A wrapper around vec4. It is only a distinct type from vec4 when using scalar
  * fallback.
  * Most vec2 functions just call the vec4 counterparts, with the exception of
  * special operations like length etc.
- *
- * An additional consideration for vec2 is that the storage type is two floats
- * and is 8 byte aligned, meaning that the default load is a type of unaligned
- * load, and may be slower than storing vec4s and doing vec2 operations on them.
  */
 #ifndef __VMATH_DECL_VEC2_F32_H
 #define __VMATH_DECL_VEC2_F32_H
 
 #include "vmath/decl/vec4_f32.h"
-#include "vmath/internal/intrinsics.h"
-#include "vmath/internal/stdfloat.h"
 
 /// vec2 storage type
-typedef struct VMATH_ALIGNED(8)
+typedef struct
 {
 	vm_float32_t x;
 	vm_float32_t y;
@@ -32,41 +27,14 @@ typedef struct
 } vm_v2f_t;
 #endif
 
-struct vm_transform2df_t;
-
-/// Load a vec2 from memory. Memory must be 8-byte aligned.
+/// Load a vec2 from memory.
 VMATH_INLINE_DECL vm_v2f_t vm_load_v2f(const vm_v2fs_t* vec);
-/// Load a vec2 from memory as a float buffer. Memory must be 8-byte aligned.
+/// Load a vec2 from memory as a float buffer.
 VMATH_INLINE_DECL vm_v2f_t vm_loadb_v2f(const vm_float32_t vec[2]);
-/// Store a vec2 into memory. Memory must be 8 byte aligned.
+/// Store a vec2 into memory.
 VMATH_INLINE_DECL void vm_store_v2f(vm_v2fs_t* output, vm_v2f_t vector);
-/// Store a vec2 into memory as a float buffer. Memory must be 8 byte aligned.
+/// Store a vec2 into memory as a float buffer.
 VMATH_INLINE_DECL void vm_storeb_v2f(vm_float32_t output[2], vm_v2f_t vector);
-
-/// Load a vec2 from a vec4 storage type. Because vec4 storage must be 16 byte
-/// aligned, this load may be faster than vm_load_v2f/vm_loadb_v2f. Note that
-/// this operation may perform a memory read from all the elements of the vec4
-/// storage. Whether the upper two elements are present in the output
-/// register(s) is undefined.
-VMATH_INLINE_DECL vm_v2f_t vm_load4_v2f(const vm_v4fs_t* vec);
-/// Load a vec2 from vec4 storage, a 16 byte aligned buffer of 4 single
-/// precision floats. Because vec4 storage must be 16 byte aligned, this load
-/// may be faster than vm_load_v2f/vm_loadb_v2f. Note that this operation may
-/// perform a memory read from all the elements of the vec4 storage. Whether the
-/// upper two elements are present in the output register(s) is undefined.
-VMATH_INLINE_DECL vm_v2f_t vm_loadb4_v2f(const vm_float32_t vec[4]);
-/// Store a vec2 into a vec4 storage type. The memory must be 16 byte aligned.
-/// The contents of the upper two values of the vec4 after this operation is
-/// undefined.
-/// This store may be faster than vm_store_v2f/vm_storeb_v2f due to higher
-/// alignment, but you must provide 2x the memory.
-VMATH_INLINE_DECL void vm_store4_v2f(vm_v4fs_t* output, vm_v2f_t vector);
-/// Store a vec2 into a vec4 storage, a 16 byte aligned buffer of 4 single
-/// precision floats. The memory must be 16 byte aligned. The contents of the
-/// upper two values of the vec4 after this operation is undefined. This store
-/// may be faster than vm_store_v2f/vm_storeb_v2f due to higher alignment, but
-/// you must provide 2x the memory.
-VMATH_INLINE_DECL void vm_storeb4_v2f(vm_float32_t output[4], vm_v2f_t vector);
 
 /// Load a constant { 1, 1 } into a vec2
 VMATH_INLINE_DECL vm_v2f_t vm_load_ones_v2f(void);
@@ -130,10 +98,13 @@ VMATH_INLINE_DECL vm_v2f_t vm_distance_v2f(vm_v2f_t vec1, vm_v2f_t vec2);
 VMATH_INLINE_DECL vm_v2f_t vm_distance_sqr_v2f(vm_v2f_t vec1, vm_v2f_t vec2);
 VMATH_INLINE_DECL vm_v2f_t vm_angle_v2f(vm_v2f_t vec1, vm_v2f_t vec2);
 VMATH_INLINE_DECL vm_v2f_t vm_normalize_v2f(vm_v2f_t vec);
-VMATH_INLINE_DECL vm_v2f_t vm_lerp_v2f(vm_v2f_t vec1, vm_v2f_t vec2, vm_v2f_t amount);
+VMATH_INLINE_DECL vm_v2f_t vm_lerp_v2f(vm_v2f_t vec1, vm_v2f_t vec2,
+									   vm_v2f_t amount);
 VMATH_INLINE_DECL vm_v2f_t vm_reflect_v2f(vm_v2f_t vec, vm_v2f_t normal);
-VMATH_INLINE_DECL vm_v2f_t vm_move_towards_v2f(vm_v2f_t vec, vm_v2f_t target, vm_v2f_t max_distance);
-VMATH_INLINE_DECL vm_v2f_t vm_clamp_axes_v2f(vm_v2f_t vec, vm_v2f_t min, vm_v2f_t max);
+VMATH_INLINE_DECL vm_v2f_t vm_move_towards_v2f(vm_v2f_t vec, vm_v2f_t target,
+											   vm_v2f_t max_distance);
+VMATH_INLINE_DECL vm_v2f_t vm_clamp_axes_v2f(vm_v2f_t vec, vm_v2f_t min,
+											 vm_v2f_t max);
 VMATH_INLINE_DECL vm_v2f_t vm_clamp_magnitude_v2f(vm_v2f_t vec, vm_v2f_t range);
 
 #endif
