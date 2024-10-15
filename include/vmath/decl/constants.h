@@ -54,13 +54,18 @@ typedef union vm_uintinit_v4f vm_uintinit_v4f;
 VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_zeroes;
 VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_ones;
 
+VMATH_EXTERN_CONST vm_floatinit_v4f vm_mat4x4_iden_row0;
 VMATH_EXTERN_CONST vm_floatinit_v4f vm_mat4x4_iden_row1;
 VMATH_EXTERN_CONST vm_floatinit_v4f vm_mat4x4_iden_row2;
 VMATH_EXTERN_CONST vm_floatinit_v4f vm_mat4x4_iden_row3;
-VMATH_EXTERN_CONST vm_floatinit_v4f vm_mat4x4_iden_row4;
 
-VMATH_EXTERN_CONST vm_floatinit_v8f vm_mat4x4_iden_rows_1_and_2;
-VMATH_EXTERN_CONST vm_floatinit_v8f vm_mat4x4_iden_rows_3_and_4;
+VMATH_EXTERN_CONST vm_floatinit_v4f vm_negate_x;
+VMATH_EXTERN_CONST vm_floatinit_v4f vm_negate_y;
+VMATH_EXTERN_CONST vm_floatinit_v4f vm_negate_z;
+VMATH_EXTERN_CONST vm_floatinit_v4f vm_negate_w;
+
+VMATH_EXTERN_CONST vm_floatinit_v8f vm_mat4x4_iden_rows_0_and_1;
+VMATH_EXTERN_CONST vm_floatinit_v8f vm_mat4x4_iden_rows_2_and_3;
 
 VMATH_EXTERN_CONST vm_floatinit_v16f vm_mat4x4_iden;
 

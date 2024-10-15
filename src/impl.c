@@ -57,14 +57,19 @@ const char* vm_get_feature_string(void)
 const vm_floatinit_v4f vm_v4_zeroes = {{0.F, 0.F, 0.F, 0.F}};
 const vm_floatinit_v4f vm_v4_ones = {{1.F, 1.F, 1.F, 1.F}};
 
-const vm_floatinit_v4f vm_mat4x4_iden_row1 = {{1.0F, 0.0F, 0.0F, 0.0F}};
-const vm_floatinit_v4f vm_mat4x4_iden_row2 = {{0.0F, 1.0F, 0.0F, 0.0F}};
-const vm_floatinit_v4f vm_mat4x4_iden_row3 = {{0.0F, 0.0F, 1.0F, 0.0F}};
-const vm_floatinit_v4f vm_mat4x4_iden_row4 = {{0.0F, 0.0F, 0.0F, 1.0F}};
+const vm_floatinit_v4f vm_mat4x4_iden_row0 = {{1.0F, 0.0F, 0.0F, 0.0F}};
+const vm_floatinit_v4f vm_mat4x4_iden_row1 = {{0.0F, 1.0F, 0.0F, 0.0F}};
+const vm_floatinit_v4f vm_mat4x4_iden_row2 = {{0.0F, 0.0F, 1.0F, 0.0F}};
+const vm_floatinit_v4f vm_mat4x4_iden_row3 = {{0.0F, 0.0F, 0.0F, 1.0F}};
 
-const vm_floatinit_v8f vm_mat4x4_iden_rows_1_and_2 = {
+const vm_floatinit_v4f vm_negate_x = {{-1.F, 1.F, 1.F, 1.F}};
+const vm_floatinit_v4f vm_negate_y = {{1.F, -1.F, 1.F, 1.F}};
+const vm_floatinit_v4f vm_negate_z = {{1.F, 1.F, -1.F, 1.F}};
+const vm_floatinit_v4f vm_negate_w = {{1.F, 1.F, 1.F, -1.F}};
+
+const vm_floatinit_v8f vm_mat4x4_iden_rows_0_and_1 = {
 	{1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F}};
-const vm_floatinit_v8f vm_mat4x4_iden_rows_3_and_4 = {
+const vm_floatinit_v8f vm_mat4x4_iden_rows_2_and_3 = {
 	{0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F}};
 
 // clang-format off
