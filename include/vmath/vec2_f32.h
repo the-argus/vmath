@@ -5,6 +5,7 @@
 #ifndef __VMATH_VEC2_F32_H
 #define __VMATH_VEC2_F32_H
 
+#include "vmath/decl/constants.h"
 #include "vmath/decl/vec2_f32.h"
 #include <assert.h>
 #include <math.h>
@@ -75,13 +76,15 @@ VMATH_INLINE vm_v2f_t vm_splat_v2f(vm_float32_t fill)
 #endif
 }
 
-/*
- * Load constants
- * TODO: global constants + regular loads, no splat
- */
+VMATH_INLINE vm_v2f_t vm_load_ones_v2f(void)
+{
+	return vm_shave4_v2f(vm_v4_ones.vector_rep);
+}
 
-VMATH_INLINE vm_v2f_t vm_load_ones_v2f(void) { return vm_splat_v2f(1.F); }
-VMATH_INLINE vm_v2f_t vm_load_zeroes_v2f(void) { return vm_splat_v2f(0.F); }
+VMATH_INLINE vm_v2f_t vm_load_zeroes_v2f(void)
+{
+	return vm_shave4_v2f(vm_v4_zeroes.vector_rep);
+}
 
 /*
  * Add / subtract / multiply / divide vec2s, componentwise

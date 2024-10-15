@@ -15,11 +15,15 @@ typedef struct
 	vm_float32_t rows[4][4];
 } vm_mat4x4fs_t;
 
+#ifdef VMATH_SIMD_ENABLED
+typedef vm_v16f_t vm_mat4x4f_t;
+#else
 typedef struct
 {
-	/// Private implementation detail
+    /// Implementation detail in scalar fallback mode
 	vm_v16f_t _inner;
-} vm_mat4x4f_t;
+} vm_v2f_t;
+#endif
 
 /// Load a 4x4 matrix from memory
 VMATH_INLINE_DECL vm_mat4x4f_t vm_load_mat4x4f(const vm_mat4x4fs_t* matrix);
