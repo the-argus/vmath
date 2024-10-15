@@ -47,22 +47,22 @@ VMATH_INLINE_DECL vm_v3f_t vm_splat_v3f(vm_float32_t fill);
 VMATH_INLINE_DECL vm_v3f_t vm_shave4_v3f(vm_v4f_t vec);
 
 /// Add two three-element vectors together, componentwise
-VMATH_INLINE_DECL vm_v3f_t vm_add_v3f(vm_v4f_t a, vm_v4f_t b);
+VMATH_INLINE_DECL vm_v3f_t vm_add_v3f(vm_v3f_t a, vm_v3f_t b);
 /// Subtract a three-element vectors from another, componentwise
-VMATH_INLINE_DECL vm_v3f_t vm_sub_v3f(vm_v4f_t a, vm_v4f_t b);
+VMATH_INLINE_DECL vm_v3f_t vm_sub_v3f(vm_v3f_t a, vm_v3f_t b);
 /// Multiply two three-element vectors together, componentwise
-VMATH_INLINE_DECL vm_v3f_t vm_mul_v3f(vm_v4f_t a, vm_v4f_t b);
+VMATH_INLINE_DECL vm_v3f_t vm_mul_v3f(vm_v3f_t a, vm_v3f_t b);
 /// Divide a three-element vectors by another, componentwise
-VMATH_INLINE_DECL vm_v3f_t vm_div_v3f(vm_v4f_t a, vm_v4f_t b);
+VMATH_INLINE_DECL vm_v3f_t vm_div_v3f(vm_v3f_t a, vm_v3f_t b);
 
 /// Add a constant float32 value to all the elements of a 3 element vector
-VMATH_INLINE_DECL vm_v3f_t vm_addc_v3f(vm_v4f_t a, vm_float32_t b);
+VMATH_INLINE_DECL vm_v3f_t vm_addc_v3f(vm_v3f_t a, vm_float32_t b);
 /// Subtract a constant float32 value from all the elements of a 3 element
 /// vector
-VMATH_INLINE_DECL vm_v3f_t vm_subc_v3f(vm_v4f_t a, vm_float32_t b);
+VMATH_INLINE_DECL vm_v3f_t vm_subc_v3f(vm_v3f_t a, vm_float32_t b);
 /// Multiply all the elements of a 3 element vector by a constant float32 value
-VMATH_INLINE_DECL vm_v3f_t vm_mulc_v3f(vm_v4f_t a, vm_float32_t b);
+VMATH_INLINE_DECL vm_v3f_t vm_mulc_v3f(vm_v3f_t a, vm_float32_t b);
 /// Divide all the elements of a 3 element vector by a constant float32 value
-VMATH_INLINE_DECL vm_v3f_t vm_divc_v3f(vm_v4f_t a, vm_float32_t b);
+VMATH_INLINE_DECL vm_v3f_t vm_divc_v3f(vm_v3f_t a, vm_float32_t b);
 
 #endif

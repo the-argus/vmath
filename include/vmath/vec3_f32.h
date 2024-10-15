@@ -87,9 +87,9 @@ VMATH_INLINE vm_v3f_t vm_shave4_v3f(vm_v4f_t vec)
 #error RISCV vector extensions not implemented
 #else
 	vm_v3f_t output;
-	output._inner.x = vec->x;
-	output._inner.y = vec->y;
-	output._inner.z = vec->z;
+	output._inner.x = vec._inner.x;
+	output._inner.y = vec._inner.y;
+	output._inner.z = vec._inner.z;
 	return output;
 #endif
 }

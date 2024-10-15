@@ -20,9 +20,9 @@ typedef vm_v16f_t vm_mat4x4f_t;
 #else
 typedef struct
 {
-    /// Implementation detail in scalar fallback mode
+	/// Implementation detail in scalar fallback mode
 	vm_v16f_t _inner;
-} vm_v2f_t;
+} vm_mat4x4f_t;
 #endif
 
 /// Load a 4x4 matrix from memory
