@@ -17,4 +17,8 @@ VMATH_INLINE_DECL void vm_sin_cos(float* out_sin, float* out_cos, float theta);
 VMATH_INLINE_DECL void vm_sin_cos_est(float* out_sin, float* out_cos,
 									  float theta);
 
+/// Round float to nearest int, preferring nearest even integer (banker's
+/// rounding)
+VMATH_INLINE_DECL vm_float32_t vm_nearest_int_round(vm_float32_t value);
+
 #endif

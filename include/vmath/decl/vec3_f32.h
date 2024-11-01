@@ -65,4 +65,11 @@ VMATH_INLINE_DECL vm_v3f_t vm_mulc_v3f(vm_v3f_t a, vm_float32_t b);
 /// Divide all the elements of a 3 element vector by a constant float32 value
 VMATH_INLINE_DECL vm_v3f_t vm_divc_v3f(vm_v3f_t a, vm_float32_t b);
 
+/// Calculate both the sin and the cos of every value inside of `angles`
+VMATH_INLINE_DECL void vm_sin_cos_v3f(vm_v3f_t* out_sin, vm_v3f_t* out_cos,
+									  vm_v3f_t angles);
+
+/// Wrap vector components to be between -pi and pi
+VMATH_INLINE_DECL vm_v3f_t vm_mod_pi_v3f(vm_v3f_t angles);
+
 #endif

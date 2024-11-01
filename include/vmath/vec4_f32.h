@@ -6,6 +6,7 @@
 #define __VMATH_VEC4_F32_H
 
 #include "vmath/decl/vec4_f32.h"
+#include "vmath/scalar.h"
 #include <assert.h>
 
 VMATH_INLINE vm_v4f_t vm_load_v4f(const vm_v4fs_t* const vec)
@@ -87,5 +88,24 @@ VMATH_INLINE vm_v4f_t vm_splat_v4f(vm_float32_t fill)
 #include "vmath/generated/v4f/v4f_componentwise_constant_div.h"
 #include "vmath/generated/v4f/v4f_componentwise_constant_mul.h"
 #include "vmath/generated/v4f/v4f_componentwise_constant_sub.h"
+
+VMATH_INLINE vm_v4f_t vm_nearest_int_round_v4f(vm_v4f_t vec)
+{
+#if defined(VMATH_SSE41_ENABLE)
+	// NOLINTNEXTLINE
+	return _mm_round_ps(vec, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
+#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
+#error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
+#else
+	vm_v4f_t out;
+	out._inner.x = vm_nearest_int_round(vec._inner.x);
+	out._inner.y = vm_nearest_int_round(vec._inner.y);
+	out._inner.z = vm_nearest_int_round(vec._inner.z);
+	out._inner.w = vm_nearest_int_round(vec._inner.w);
+	return out;
+#endif
+}
 
 #endif

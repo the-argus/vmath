@@ -6,6 +6,7 @@
 #define __VMATH_VEC3_F32_H
 
 #include "vmath/decl/vec3_f32.h"
+#include "vmath/scalar.h"
 #include <assert.h>
 
 VMATH_INLINE vm_v3f_t vm_load_v3f(const vm_v3fs_t* vec)
@@ -91,6 +92,121 @@ VMATH_INLINE vm_v3f_t vm_shave4_v3f(vm_v4f_t vec)
 	output._inner.y = vec._inner.y;
 	output._inner.z = vec._inner.z;
 	return output;
+#endif
+}
+
+VMATH_INLINE_DECL vm_v3f_t vm_mod_pi_v3f(vm_v3f_t angles)
+{
+#if defined(VMATH_SSE41_ENABLE)
+    vm_v4f_t mod = _mm_mul_ps(angles, vm_v4_2pi_inverse.vector_rep);
+    mod = XMVectorRound(vResult);
+    return VMATH_FNMADD_PS(mod, vm_v4_2pi.vector_rep, angles);
+	return vec;
+#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
+#error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
+#else
+	vm_v3f_t output;
+	output._inner.x = vec._inner.x;
+	output._inner.y = vec._inner.y;
+	output._inner.z = vec._inner.z;
+	return output;
+#endif
+
+#if defined(_XM_NO_INTRINSICS_)
+
+    XMVECTOR V;
+    XMVECTOR Result;
+
+    // Modulo the range of the given angles such that -XM_PI <= Angles < XM_PI
+    V = XMVectorMultiply(Angles, g_XMReciprocalTwoPi.v);
+    V = XMVectorRound(V);
+    Result = XMVectorNegativeMultiplySubtract(g_XMTwoPi.v, V, Angles);
+    return Result;
+
+#elif defined(_XM_ARM_NEON_INTRINSICS_)
+    // Modulo the range of the given angles such that -XM_PI <= Angles < XM_PI
+    XMVECTOR vResult = vmulq_f32(Angles, g_XMReciprocalTwoPi);
+    // Use the inline function due to complexity for rounding
+    vResult = XMVectorRound(vResult);
+    return vmlsq_f32(Angles, vResult, g_XMTwoPi);
+#elif defined(_XM_SSE_INTRINSICS_)
+#endif
+}
+
+VMATH_INLINE void vm_sin_cos_v3f(vm_v3f_t* out_sin, vm_v3f_t* out_cos,
+								 vm_v3f_t angles)
+{
+	assert(out_sin != NULL);
+	assert(out_cos != NULL);
+
+#if defined(VMATH_SSE41_ENABLE)
+	// Force the value within the bounds of pi
+	XMVECTOR x = XMVectorModAngles(V);
+
+	// Map in [-pi/2,pi/2] with sin(y) = sin(x), cos(y) = sign*cos(x).
+	XMVECTOR sign = _mm_and_ps(x, g_XMNegativeZero);
+	__m128 c = _mm_or_ps(g_XMPi, sign);	  // pi when x >= 0, -pi when x < 0
+	__m128 absx = _mm_andnot_ps(sign, x); // |x|
+	__m128 rflx = _mm_sub_ps(c, x);
+	__m128 comp = _mm_cmple_ps(absx, g_XMHalfPi);
+	__m128 select0 = _mm_and_ps(comp, x);
+	__m128 select1 = _mm_andnot_ps(comp, rflx);
+	x = _mm_or_ps(select0, select1);
+	select0 = _mm_and_ps(comp, g_XMOne);
+	select1 = _mm_andnot_ps(comp, g_XMNegativeOne);
+	sign = _mm_or_ps(select0, select1);
+
+	__m128 x2 = _mm_mul_ps(x, x);
+
+	// Compute polynomial approximation of sine
+	const XMVECTOR SC1 = g_XMSinCoefficients1;
+	__m128 vConstantsB = XM_PERMUTE_PS(SC1, _MM_SHUFFLE(0, 0, 0, 0));
+	const XMVECTOR SC0 = g_XMSinCoefficients0;
+	__m128 vConstants = XM_PERMUTE_PS(SC0, _MM_SHUFFLE(3, 3, 3, 3));
+	__m128 Result = XM_FMADD_PS(vConstantsB, x2, vConstants);
+
+	vConstants = XM_PERMUTE_PS(SC0, _MM_SHUFFLE(2, 2, 2, 2));
+	Result = XM_FMADD_PS(Result, x2, vConstants);
+
+	vConstants = XM_PERMUTE_PS(SC0, _MM_SHUFFLE(1, 1, 1, 1));
+	Result = XM_FMADD_PS(Result, x2, vConstants);
+
+	vConstants = XM_PERMUTE_PS(SC0, _MM_SHUFFLE(0, 0, 0, 0));
+	Result = XM_FMADD_PS(Result, x2, vConstants);
+
+	Result = XM_FMADD_PS(Result, x2, g_XMOne);
+	Result = _mm_mul_ps(Result, x);
+	*pSin = Result;
+
+	// Compute polynomial approximation of cosine
+	const XMVECTOR CC1 = g_XMCosCoefficients1;
+	vConstantsB = XM_PERMUTE_PS(CC1, _MM_SHUFFLE(0, 0, 0, 0));
+	const XMVECTOR CC0 = g_XMCosCoefficients0;
+	vConstants = XM_PERMUTE_PS(CC0, _MM_SHUFFLE(3, 3, 3, 3));
+	Result = XM_FMADD_PS(vConstantsB, x2, vConstants);
+
+	vConstants = XM_PERMUTE_PS(CC0, _MM_SHUFFLE(2, 2, 2, 2));
+	Result = XM_FMADD_PS(Result, x2, vConstants);
+
+	vConstants = XM_PERMUTE_PS(CC0, _MM_SHUFFLE(1, 1, 1, 1));
+	Result = XM_FMADD_PS(Result, x2, vConstants);
+
+	vConstants = XM_PERMUTE_PS(CC0, _MM_SHUFFLE(0, 0, 0, 0));
+	Result = XM_FMADD_PS(Result, x2, vConstants);
+
+	Result = XM_FMADD_PS(Result, x2, g_XMOne);
+	Result = _mm_mul_ps(Result, sign);
+	*pCos = Result;
+#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
+#error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
+#else
+	vm_sin_cos(&out_sin->_inner.x, &out_cos->_inner.x, angles._inner.x);
+	vm_sin_cos(&out_sin->_inner.y, &out_cos->_inner.y, angles._inner.y);
+	vm_sin_cos(&out_sin->_inner.z, &out_cos->_inner.z, angles._inner.z);
 #endif
 }
 

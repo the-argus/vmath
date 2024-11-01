@@ -24,7 +24,7 @@ typedef __m128 vm_v4f_t;
 typedef struct
 {
 	/// Non-simd implementation detail
-    vm_v4fs_t _inner;
+	vm_v4fs_t _inner;
 } vm_v4f_t;
 
 #endif
@@ -59,5 +59,8 @@ VMATH_INLINE_DECL vm_v4f_t vm_subc_v4f(vm_v4f_t a, vm_float32_t b);
 VMATH_INLINE_DECL vm_v4f_t vm_mulc_v4f(vm_v4f_t a, vm_float32_t b);
 /// Divide all the elements of a 4 element vector by a constant float32 value
 VMATH_INLINE_DECL vm_v4f_t vm_divc_v4f(vm_v4f_t a, vm_float32_t b);
+
+/// Round all elements of 4 element vector to nearest integer value
+VMATH_INLINE_DECL vm_v4f_t vm_nearest_int_round_v4f(vm_v4f_t vec);
 
 #endif

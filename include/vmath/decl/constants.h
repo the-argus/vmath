@@ -53,6 +53,8 @@ typedef union vm_uintinit_v4f vm_uintinit_v4f;
 
 VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_zeroes;
 VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_ones;
+VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_2pi;
+VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_2pi_inverse;
 
 VMATH_EXTERN_CONST vm_floatinit_v4f vm_mat4x4_iden_row0;
 VMATH_EXTERN_CONST vm_floatinit_v4f vm_mat4x4_iden_row1;

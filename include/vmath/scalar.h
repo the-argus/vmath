@@ -286,4 +286,24 @@ VMATH_INLINE void vm_sin_cos_est(vm_float32_t* const out_sin,
 	*out_cos = sign * p;
 }
 
+VMATH_INLINE vm_float32_t vm_nearest_int_round(vm_float32_t value)
+{
+	vm_float32_t i = floorf(value);
+	value -= i;
+	if (value < 0.5F) {
+		return i;
+	}
+	if (value > 0.5F) {
+		return i + 1.F;
+	}
+
+	vm_float32_t int_part;
+	(void)modff(i / 2.F, &int_part);
+	if ((2.F * int_part) == i) {
+		return i;
+	}
+
+	return i + 1.F;
+}
+
 #endif

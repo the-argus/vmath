@@ -56,6 +56,10 @@ const char* vm_get_feature_string(void)
 
 const vm_floatinit_v4f vm_v4_zeroes = {{0.F, 0.F, 0.F, 0.F}};
 const vm_floatinit_v4f vm_v4_ones = {{1.F, 1.F, 1.F, 1.F}};
+const vm_floatinit_v4f vm_v4_2pi = {
+	{VMATH_2PI, VMATH_2PI, VMATH_2PI, VMATH_2PI}};
+const vm_floatinit_v4f vm_v4_2pi_inverse = {
+	{VMATH_1DIV2PI, VMATH_1DIV2PI, VMATH_1DIV2PI, VMATH_1DIV2PI}};
 
 const vm_floatinit_v4f vm_mat4x4_iden_row0 = {{1.0F, 0.0F, 0.0F, 0.0F}};
 const vm_floatinit_v4f vm_mat4x4_iden_row1 = {{0.0F, 1.0F, 0.0F, 0.0F}};
