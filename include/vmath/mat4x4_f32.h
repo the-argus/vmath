@@ -5,6 +5,7 @@
 #include "vmath/decl/mat4x4_f32.h"
 #include "vmath/decl/scalar.h"
 #include "vmath/decl/vec4_f32.h"
+#include <string.h>
 
 VMATH_INLINE vm_mat4x4f_t vm_load_mat4x4f(const vm_mat4x4fs_t* matrix)
 {
@@ -60,11 +61,7 @@ VMATH_INLINE vm_mat4x4f_t vm_load_identity_mat4x4f(void)
 
 VMATH_INLINE vm_mat4x4f_t vm_load_rotation_x_mat4x4f(vm_float32_t theta)
 {
-#if defined(VMATH_AVX512_GENERIC_ENABLE)
-
-#elif defined(VMATH_AVX256_GENERIC_ENABLE)
-
-#elif defined(VMATH_SSE41_ENABLE)
+#if defined(VMATH_SSE41_ENABLE)
 	vm_float32_t sin;
 	vm_float32_t cos;
 	vm_sin_cos(&sin, &cos, theta);
@@ -77,21 +74,63 @@ VMATH_INLINE vm_mat4x4f_t vm_load_rotation_x_mat4x4f(vm_float32_t theta)
 
 	vm_mat4x4f_t matrix;
 
+	// perform load of values into matrix differently depending on internal rep
+	// TODO: is insert with m128s the best way to do this in avx2/avx512?
+#if defined(VMATH_AVX512_GENERIC_ENABLE)
+	matrix = vm_mat4x4_iden.vector_rep;
+	matrix = _mm512_insertf32x4(matrix, v_cos, 1);
+#elif defined(VMATH_AVX256_GENERIC_ENABLE)
+	matrix.buffer[0] = _mm256_insertf128_ps(matrix.buffer[0],
+											vm_mat4x4_iden_row0.vector_rep, 0);
+	matrix.buffer[0] = _mm256_insertf128_ps(matrix.buffer[0], v_cos, 1);
+#else
 	matrix.buffer[0] = vm_mat4x4_iden_row0.vector_rep;
 	matrix.buffer[1] = v_cos;
+#endif
 	// x = 0,y = sin,z = cos, w = 0
 	v_cos = _mm_shuffle_ps(v_cos, v_cos, _MM_SHUFFLE(3, 1, 2, 0)); // NOLINT
 	// x = 0,y = -sin,z = cos, w = 0
 	v_cos = _mm_mul_ps(v_cos, vm_negate_y.vector_rep);
+
+#if defined(VMATH_AVX512_GENERIC_ENABLE)
+	matrix = _mm512_insertf32x4(matrix, v_cos, 2);
+	matrix = _mm512_insertf32x4(matrix, vm_mat4x4_iden_row3.vector_rep, 3);
+#elif defined(VMATH_AVX256_GENERIC_ENABLE)
+	matrix.buffer[1] = _mm256_insertf128_ps(matrix.buffer[1], v_cos, 0);
+	matrix.buffer[1] = _mm256_insertf128_ps(matrix.buffer[1],
+											vm_mat4x4_iden_row3.vector_rep, 1);
+#else
 	matrix.buffer[2] = v_cos;
 	matrix.buffer[3] = vm_mat4x4_iden_row3.vector_rep;
+#endif
 	return matrix;
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
+	vm_float32_t sin;
+	vm_float32_t cos;
+	vm_sin_cos(&sin, &cos, theta);
 
+	vm_mat4x4f_t matrix;
+	// row 0 is identity
+	memcpy(matrix._inner.buffer, vm_mat4x4_iden_row0.float_rep,
+		   sizeof(vm_mat4x4_iden_row0.float_rep));
+	// row 1
+	matrix._inner.buffer[4] = 0;
+	matrix._inner.buffer[5] = cos;
+	matrix._inner.buffer[6] = sin;
+	matrix._inner.buffer[7] = 0;
+	// row 2
+	matrix._inner.buffer[8] = 0;
+	matrix._inner.buffer[9] = -sin;
+	matrix._inner.buffer[10] = cos;
+	matrix._inner.buffer[11] = 0;
+	// row 3 is identity
+	memcpy(matrix._inner.buffer + 12, vm_mat4x4_iden_row3.float_rep,
+		   sizeof(vm_mat4x4_iden_row3.float_rep));
+	return matrix;
 #endif
 }
 
