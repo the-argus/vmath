@@ -77,7 +77,10 @@ VMATH_INLINE vm_mat4x4f_t vm_load_rotation_x_mat4x4f(vm_float32_t theta)
 	// perform load of values into matrix differently depending on internal rep
 	// TODO: is insert with m128s the best way to do this in avx2/avx512?
 #if defined(VMATH_AVX512_GENERIC_ENABLE)
-	matrix = vm_mat4x4_iden.vector_rep;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wuninitialized"
+	matrix = _mm512_insertf32x4(matrix, vm_mat4x4_iden_row0.vector_rep, 0);
+#pragma clang diagnostic pop
 	matrix = _mm512_insertf32x4(matrix, v_cos, 1);
 #elif defined(VMATH_AVX256_GENERIC_ENABLE)
 	matrix.buffer[0] = _mm256_insertf128_ps(matrix.buffer[0],
@@ -136,55 +139,161 @@ VMATH_INLINE vm_mat4x4f_t vm_load_rotation_x_mat4x4f(vm_float32_t theta)
 
 VMATH_INLINE vm_mat4x4f_t vm_load_rotation_y_mat4x4f(vm_float32_t theta)
 {
+#if defined(VMATH_SSE41_ENABLE)
+	vm_float32_t sin;
+	vm_float32_t cos;
+	vm_sin_cos(&sin, &cos, theta);
+
+	vm_v4f_t v_sin = _mm_set_ss(sin);
+	vm_v4f_t v_cos = _mm_set_ss(cos);
+
+	// x = sin,y = 0,z = cos, w = 0
+	v_sin = _mm_shuffle_ps(v_sin, v_cos, _MM_SHUFFLE(3, 0, 3, 0)); // NOLINT
+	vm_mat4x4f_t matrix;
+
 #if defined(VMATH_AVX512_GENERIC_ENABLE)
-
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wuninitialized"
+	matrix = _mm512_insertf32x4(matrix, vm_mat4x4_iden_row1.vector_rep, 1);
+#pragma clang diagnostic pop
+	matrix = _mm512_insertf32x4(matrix, v_sin, 2);
 #elif defined(VMATH_AVX256_GENERIC_ENABLE)
+	matrix.buffer[0] = _mm256_insertf128_ps(matrix.buffer[0],
+											vm_mat4x4_iden_row1.vector_rep, 1);
+	matrix.buffer[1] = _mm256_insertf128_ps(matrix.buffer[1], v_sin, 0);
+#else
+	matrix.buffer[1] = vm_mat4x4_iden_row1.vector_rep;
+	matrix.buffer[2] = v_sin;
+#endif
 
-#elif defined(VMATH_SSE41_ENABLE)
+	// x = cos,y = 0,z = sin, w = 0
+	v_sin = _mm_shuffle_ps(v_sin, v_sin, _MM_SHUFFLE(3, 0, 1, 2)); // NOLINT
+	// x = cos,y = 0,z = -sin, w = 0
+	v_sin = _mm_mul_ps(v_sin, vm_negate_z.vector_rep);
 
+#if defined(VMATH_AVX512_GENERIC_ENABLE)
+	matrix = _mm512_insertf32x4(matrix, v_sin, 0);
+	matrix = _mm512_insertf32x4(matrix, vm_mat4x4_iden_row3.vector_rep, 3);
+#elif defined(VMATH_AVX256_GENERIC_ENABLE)
+	matrix.buffer[0] = _mm256_insertf128_ps(matrix.buffer[0], v_sin, 0);
+	matrix.buffer[1] = _mm256_insertf128_ps(matrix.buffer[1],
+											vm_mat4x4_iden_row3.vector_rep, 1);
+#else
+	matrix.buffer[0] = v_sin;
+	matrix.buffer[3] = vm_mat4x4_iden_row3.vector_rep;
+#endif
+	return matrix;
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
+	vm_float32_t sin;
+	vm_float32_t cos;
+	vm_sin_cos(&sin, &cos, theta);
 
+	vm_mat4x4f_t matrix;
+	// row 0
+	matrix._inner.buffer[0] = cos;
+	matrix._inner.buffer[1] = 0.F;
+	matrix._inner.buffer[2] = -sin;
+	matrix._inner.buffer[3] = 0.F;
+	// row 1 is identity
+	memcpy(matrix._inner.buffer, vm_mat4x4_iden_row1.float_rep,
+		   sizeof(vm_mat4x4_iden_row1.float_rep));
+	// row 2
+	matrix._inner.buffer[8] = sin;
+	matrix._inner.buffer[9] = 0.F;
+	matrix._inner.buffer[10] = cos;
+	matrix._inner.buffer[11] = 0.F;
+	// row 3 is identity
+	memcpy(matrix._inner.buffer + 12, vm_mat4x4_iden_row3.float_rep,
+		   sizeof(vm_mat4x4_iden_row3.float_rep));
+	return matrix;
 #endif
 }
 
 VMATH_INLINE vm_mat4x4f_t vm_load_rotation_z_mat4x4f(vm_float32_t theta)
 {
+#if defined(VMATH_SSE41_ENABLE)
+	vm_float32_t sin;
+	vm_float32_t cos;
+	vm_sin_cos(&sin, &cos, theta);
+
+	vm_v4f_t v_sin = _mm_set_ss(sin);
+	vm_v4f_t v_cos = _mm_set_ss(cos);
+
+	// x = cos,y = sin,z = 0, w = 0
+	v_cos = _mm_unpacklo_ps(v_cos, v_sin);
+
+	vm_mat4x4f_t matrix;
+
+	// perform load of values into matrix differently depending on internal rep
+	// TODO: is insert with m128s the best way to do this in avx2/avx512?
 #if defined(VMATH_AVX512_GENERIC_ENABLE)
-
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wuninitialized"
+	matrix = _mm512_insertf32x4(matrix, v_cos, 0);
+#pragma clang diagnostic pop
 #elif defined(VMATH_AVX256_GENERIC_ENABLE)
+	matrix.buffer[0] = _mm256_insertf128_ps(matrix.buffer[0], v_cos, 0);
+#else
+	matrix.buffer[0] = v_cos;
+#endif
 
-#elif defined(VMATH_SSE41_ENABLE)
+	// x = sin,y = cos,z = 0, w = 0
+	v_cos = _mm_shuffle_ps(v_cos, v_cos, _MM_SHUFFLE(3, 2, 0, 1)); // NOLINT
+	// x = cos,y = -sin,z = 0, w = 0
+	v_cos = _mm_mul_ps(v_cos, vm_negate_x.vector_rep);
 
+#if defined(VMATH_AVX512_GENERIC_ENABLE)
+	matrix = _mm512_insertf32x4(matrix, v_cos, 1);
+	matrix =
+		_mm512_insertf32x8(matrix, vm_mat4x4_iden_rows_2_and_3.vector_rep, 1);
+#elif defined(VMATH_AVX256_GENERIC_ENABLE)
+	matrix.buffer[0] = _mm256_insertf128_ps(matrix.buffer[0], v_cos, 1);
+	matrix.buffer[1] = vm_mat4x4_iden_rows_2_and_3.vector_rep;
+#else
+	matrix.buffer[1] = v_cos;
+	matrix.buffer[2] = vm_mat4x4_iden_row2.vector_rep;
+	matrix.buffer[3] = vm_mat4x4_iden_row3.vector_rep;
+#endif
+	return matrix;
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
+	vm_float32_t sin;
+	vm_float32_t cos;
+	vm_sin_cos(&sin, &cos, theta);
 
+	vm_mat4x4f_t matrix;
+	// row 0
+	matrix._inner.buffer[0] = cos;
+	matrix._inner.buffer[1] = sin;
+	matrix._inner.buffer[2] = 0.F;
+	matrix._inner.buffer[3] = 0.F;
+	// row 1
+	matrix._inner.buffer[4] = -sin;
+	matrix._inner.buffer[5] = cos;
+	matrix._inner.buffer[6] = 0.F;
+	matrix._inner.buffer[7] = 0.F;
+	// row 2 + 3 are identity
+	memcpy(matrix._inner.buffer + 8, vm_mat4x4_iden_rows_2_and_3.float_rep,
+		   sizeof(vm_mat4x4_iden_rows_2_and_3.float_rep));
+	return matrix;
 #endif
 }
 
 VMATH_INLINE vm_mat4x4f_t vm_load_rotation_pitch_yaw_roll_mat4x4f(
 	vm_float32_t pitch, vm_float32_t yaw, vm_float32_t roll)
 {
-#if defined(VMATH_AVX512_GENERIC_ENABLE)
-
-#elif defined(VMATH_AVX256_GENERIC_ENABLE)
-
-#elif defined(VMATH_SSE41_ENABLE)
-
-#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
-#error ARM SIMD not implemented
-#elif defined(VMATH_RISCV_V1_ENABLE)
-#error RISCV vector extensions not implemented
-#else
-
-#endif
+	const vm_v3fs_t pitch_yaw_roll = {pitch, yaw, roll};
+	return vm_load_rotation_pitch_yaw_rollv_mat4x4f(
+		vm_load_v3f(&pitch_yaw_roll));
 }
+
 VMATH_INLINE vm_mat4x4f_t
 vm_load_rotation_pitch_yaw_rollv_mat4x4f(vm_v3f_t angles)
 {
@@ -199,7 +308,46 @@ vm_load_rotation_pitch_yaw_rollv_mat4x4f(vm_v3f_t angles)
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
+	vm_v3fs_t angles_readable;
+	vm_store_v3f(&angles_readable, angles);
 
+	vm_float32_t cos_pitch;
+	vm_float32_t sin_pitch;
+	vm_sin_cos(&sin_pitch, &cos_pitch, angles_readable.x);
+
+	vm_float32_t cos_yaw;
+	vm_float32_t sin_yaw;
+	vm_sin_cos(&sin_yaw, &cos_yaw, angles_readable.y);
+
+	vm_float32_t cos_roll;
+	vm_float32_t sin_roll;
+	vm_sin_cos(&sin_roll, &cos_roll, angles_readable.z);
+
+	vm_mat4x4f_t matrix;
+	matrix._inner.buffer[0] =
+		cos_roll * cos_yaw + sin_roll * sin_pitch * sin_yaw;
+	matrix._inner.buffer[1] = sin_roll * cos_pitch;
+	matrix._inner.buffer[2] =
+		sin_roll * sin_pitch * cos_yaw - cos_roll * sin_yaw;
+	matrix._inner.buffer[3] = 0.F;
+
+	matrix._inner.buffer[4] =
+		cos_roll * sin_pitch * sin_yaw - sin_roll * cos_yaw;
+	matrix._inner.buffer[5] = cos_roll * cos_pitch;
+	matrix._inner.buffer[6] =
+		sin_roll * sin_yaw + cos_roll * sin_pitch * cos_yaw;
+	matrix._inner.buffer[7] = 0.F;
+
+	matrix._inner.buffer[8] = cos_pitch * sin_yaw;
+	matrix._inner.buffer[9] = -sin_pitch;
+	matrix._inner.buffer[10] = cos_pitch * cos_yaw;
+	matrix._inner.buffer[11] = 0.F;
+
+	matrix._inner.buffer[12] = 0.F;
+	matrix._inner.buffer[13] = 0.F;
+	matrix._inner.buffer[14] = 0.F;
+	matrix._inner.buffer[15] = 1.F;
+	return matrix;
 #endif
 }
 
@@ -207,19 +355,8 @@ VMATH_INLINE vm_mat4x4f_t vm_load_translation_mat4x4f(vm_float32_t x,
 													  vm_float32_t y,
 													  vm_float32_t z)
 {
-#if defined(VMATH_AVX512_GENERIC_ENABLE)
-
-#elif defined(VMATH_AVX256_GENERIC_ENABLE)
-
-#elif defined(VMATH_SSE41_ENABLE)
-
-#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
-#error ARM SIMD not implemented
-#elif defined(VMATH_RISCV_V1_ENABLE)
-#error RISCV vector extensions not implemented
-#else
-
-#endif
+	const vm_v3fs_t offset = {x, y, z};
+	return vm_load_translationv_mat4x4f(vm_load_v3f(&offset));
 }
 
 VMATH_INLINE vm_mat4x4f_t vm_load_translationv_mat4x4f(vm_v3f_t offset)
@@ -242,19 +379,8 @@ VMATH_INLINE vm_mat4x4f_t vm_load_translationv_mat4x4f(vm_v3f_t offset)
 VMATH_INLINE vm_mat4x4f_t vm_load_scale_mat4x4f(vm_float32_t x, vm_float32_t y,
 												vm_float32_t z)
 {
-#if defined(VMATH_AVX512_GENERIC_ENABLE)
-
-#elif defined(VMATH_AVX256_GENERIC_ENABLE)
-
-#elif defined(VMATH_SSE41_ENABLE)
-
-#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
-#error ARM SIMD not implemented
-#elif defined(VMATH_RISCV_V1_ENABLE)
-#error RISCV vector extensions not implemented
-#else
-
-#endif
+	const vm_v3fs_t scale = {x, y, z};
+	return vm_load_scalev_mat4x4f(vm_load_v3f(&scale));
 }
 
 VMATH_INLINE vm_mat4x4f_t vm_load_scalev_mat4x4f(vm_v3f_t scale)
