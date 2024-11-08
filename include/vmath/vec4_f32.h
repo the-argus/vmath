@@ -128,4 +128,13 @@ VMATH_INLINE vm_v4f_t vm_negative_multiply_subtract_v4f(vm_v4f_t mul1,
 #endif
 }
 
+// NOLINTNEXTLINE
+VMATH_INLINE vm_v4f_t vm_select_v4f(const vm_v4f_t a, const vm_v4f_t b,
+									const vm_v4f_t mask)
+{
+	const __m128 masked_a = _mm_andnot_ps(mask, a);
+	const __m128 masked_b = _mm_and_ps(mask, b);
+	return _mm_or_ps(masked_a, masked_b);
+}
+
 #endif

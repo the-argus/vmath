@@ -3,6 +3,7 @@
 
 #include "vmath/internal/intrinsics.h"
 #include "vmath/internal/stdfloat.h"
+#include "vmath/internal/stdint.h"
 
 typedef struct
 {
@@ -67,5 +68,11 @@ VMATH_INLINE_DECL vm_v4f_t vm_nearest_int_round_v4f(vm_v4f_t vec);
 VMATH_INLINE_DECL vm_v4f_t vm_negative_multiply_subtract_v4f(vm_v4f_t mul1,
 															 vm_v4f_t mul2,
 															 vm_v4f_t base);
+
+/// Bitwise OR a and mask, and then bitwise NOT and bitwise OR b and mask, then
+/// Bitwise OR them together. If a mask like vm_v4_selectmask_0110.vector_rep
+/// is passed as the mask, then this can be used to select from either a or b
+/// for each element (so selectmask 0110 would give you {a.x, b.y, b.z, a.w})
+VMATH_INLINE_DECL vm_v4f_t vm_select_v4f(vm_v4f_t a, vm_v4f_t b, vm_v4f_t mask);
 
 #endif
