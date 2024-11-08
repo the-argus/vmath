@@ -44,7 +44,6 @@ pub fn build(b: *std.Build) !void {
         .root = b.path("src/"),
         .files = &.{
             "impl.c",
-            "memutil.c",
         },
         .flags = lib_flags,
     });
