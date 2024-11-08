@@ -108,4 +108,24 @@ VMATH_INLINE vm_v4f_t vm_nearest_int_round_v4f(vm_v4f_t vec)
 #endif
 }
 
+VMATH_INLINE vm_v4f_t vm_negative_multiply_subtract_v4f(vm_v4f_t mul1,
+														vm_v4f_t mul2,
+														vm_v4f_t base)
+{
+#if defined(VMATH_SSE41_ENABLE)
+	return VMATH_FNMADD_PS(mul1, mul2, base);
+#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
+#error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
+#else
+	vm_v4f_t out;
+	out._inner.x = base._inner.x - (mul1._inner.x * mul2._inner.x);
+	out._inner.y = base._inner.y - (mul1._inner.y * mul2._inner.y);
+	out._inner.z = base._inner.z - (mul1._inner.z * mul2._inner.z);
+	out._inner.w = base._inner.w - (mul1._inner.w * mul2._inner.w);
+	return out;
+#endif
+}
+
 #endif

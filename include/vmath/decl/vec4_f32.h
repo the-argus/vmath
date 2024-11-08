@@ -62,5 +62,10 @@ VMATH_INLINE_DECL vm_v4f_t vm_divc_v4f(vm_v4f_t a, vm_float32_t b);
 
 /// Round all elements of 4 element vector to nearest integer value
 VMATH_INLINE_DECL vm_v4f_t vm_nearest_int_round_v4f(vm_v4f_t vec);
+/// Multiply together all components of mul1 and mul2, and then subtract the
+/// result from base and return.
+VMATH_INLINE_DECL vm_v4f_t vm_negative_multiply_subtract_v4f(vm_v4f_t mul1,
+															 vm_v4f_t mul2,
+															 vm_v4f_t base);
 
 #endif

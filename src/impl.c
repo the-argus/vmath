@@ -54,12 +54,27 @@ const char* vm_get_feature_string(void)
 #endif
 }
 
-const vm_floatinit_v4f vm_v4_zeroes = {{0.F, 0.F, 0.F, 0.F}};
-const vm_floatinit_v4f vm_v4_ones = {{1.F, 1.F, 1.F, 1.F}};
+const vm_floatinit_v4f vm_v4_zero = {{0.F, 0.F, 0.F, 0.F}};
+const vm_floatinit_v4f vm_v4_one = {{1.F, 1.F, 1.F, 1.F}};
+const vm_floatinit_v4f vm_v4_pi = {{VMATH_PI, VMATH_PI, VMATH_PI, VMATH_PI}};
 const vm_floatinit_v4f vm_v4_2pi = {
 	{VMATH_2PI, VMATH_2PI, VMATH_2PI, VMATH_2PI}};
 const vm_floatinit_v4f vm_v4_2pi_inverse = {
 	{VMATH_1DIV2PI, VMATH_1DIV2PI, VMATH_1DIV2PI, VMATH_1DIV2PI}};
+const vm_uintinit_v4f vm_v4_negative_zero = {
+	{0x80000000, 0x80000000, 0x80000000, 0x80000000}};
+const vm_floatinit_v4f vm_v4_pidiv2 = {
+	{VMATH_PIDIV2, VMATH_PIDIV2, VMATH_PIDIV2, VMATH_PIDIV2}};
+const vm_floatinit_v4f vm_v4_negative_one = {{-1.F, -1.F, -1.F, -1.F}};
+
+const vm_floatinit_v4f vm_v4_sincoeff_0 = {
+	{-0.16666667F, +0.0083333310F, -0.00019840874F, +2.7525562e-06F}};
+const vm_floatinit_v4f vm_v4_sincoeff_1 = {
+	{-2.3889859e-08F, -0.16665852F, +0.0083139502F, -0.00018524670F}};
+const vm_floatinit_v4f vm_v4_coscoeff_0 = {
+	{-0.5F, +0.041666638F, -0.0013888378F, +2.4760495e-05F}};
+const vm_floatinit_v4f vm_v4_coscoeff_1 = {
+	{-2.6051615e-07F, -0.49992746F, +0.041493919F, -0.0012712436F}};
 
 const vm_floatinit_v4f vm_mat4x4_iden_row0 = {{1.0F, 0.0F, 0.0F, 0.0F}};
 const vm_floatinit_v4f vm_mat4x4_iden_row1 = {{0.0F, 1.0F, 0.0F, 0.0F}};

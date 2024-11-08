@@ -254,6 +254,10 @@
 #include <arm_neon.h>
 #endif
 
+// #undef VMATH_AVX512_FOUNDATION_ENABLE
+// #undef VMATH_AVX2_ENABLE
+// #undef VMATH_SSE41_ENABLE
+
 #if defined(VMATH_AVX2_ENABLE)
 #define VMATH_FMA3_ENABLE
 #endif

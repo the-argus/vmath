@@ -38,6 +38,7 @@ typedef union vm_intinit_v4f vm_intinit_v4f;
 union vm_uintinit_v4f
 {
 	uint32_t uint_rep[4];
+	vm_float32_t float_rep[4];
 	vm_v4f_t vector_rep;
 };
 typedef union vm_uintinit_v4f vm_uintinit_v4f;
@@ -51,10 +52,18 @@ typedef union vm_uintinit_v4f vm_uintinit_v4f;
 
 #define VMATH_EXTERN_CONST extern const
 
-VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_zeroes;
-VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_ones;
+VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_zero;
+VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_one;
+VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_pi;
 VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_2pi;
 VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_2pi_inverse;
+VMATH_EXTERN_CONST vm_uintinit_v4f vm_v4_negative_zero;
+VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_pidiv2;
+VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_negative_one;
+VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_sincoeff_0;
+VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_sincoeff_1;
+VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_coscoeff_0;
+VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_coscoeff_1;
 
 VMATH_EXTERN_CONST vm_floatinit_v4f vm_mat4x4_iden_row0;
 VMATH_EXTERN_CONST vm_floatinit_v4f vm_mat4x4_iden_row1;
