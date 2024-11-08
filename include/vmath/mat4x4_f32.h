@@ -5,7 +5,9 @@
 #include "vmath/decl/mat4x4_f32.h"
 #include "vmath/decl/scalar.h"
 #include "vmath/decl/vec4_f32.h"
+#if !defined(VMATH_SIMD_ENABLED)
 #include <string.h>
+#endif
 
 VMATH_INLINE vm_mat4x4f_t vm_load_mat4x4f(const vm_mat4x4fs_t* matrix)
 {
@@ -302,6 +304,35 @@ vm_load_rotation_pitch_yaw_rollv_mat4x4f(vm_v3f_t angles)
 #elif defined(VMATH_AVX256_GENERIC_ENABLE)
 
 #elif defined(VMATH_SSE41_ENABLE)
+    vm_v3f_t sin_angles; 
+    vm_v3f_t cos_angles; 
+    vm_sin_cos_v3f(&sin_angles, &cos_angles, angles);
+
+    // XMVECTOR P0 = XMVectorPermute<XM_PERMUTE_1X, XM_PERMUTE_0Z, XM_PERMUTE_1Z, XM_PERMUTE_1X>(SinAngles, CosAngles);
+    // XMVECTOR Y0 = XMVectorPermute<XM_PERMUTE_0Y, XM_PERMUTE_1X, XM_PERMUTE_1X, XM_PERMUTE_1Y>(SinAngles, CosAngles);
+    // XMVECTOR P1 = XMVectorPermute<XM_PERMUTE_1Z, XM_PERMUTE_0Z, XM_PERMUTE_1Z, XM_PERMUTE_0Z>(SinAngles, CosAngles);
+    // XMVECTOR Y1 = XMVectorPermute<XM_PERMUTE_1Y, XM_PERMUTE_1Y, XM_PERMUTE_0Y, XM_PERMUTE_0Y>(SinAngles, CosAngles);
+    // XMVECTOR P2 = XMVectorPermute<XM_PERMUTE_0Z, XM_PERMUTE_1Z, XM_PERMUTE_0Z, XM_PERMUTE_1Z>(SinAngles, CosAngles);
+    // XMVECTOR P3 = XMVectorPermute<XM_PERMUTE_0Y, XM_PERMUTE_0Y, XM_PERMUTE_1Y, XM_PERMUTE_1Y>(SinAngles, CosAngles);
+    // XMVECTOR Y2 = XMVectorSplatX(SinAngles);
+    // XMVECTOR NS = XMVectorNegate(SinAngles);
+
+    // XMVECTOR Q0 = XMVectorMultiply(P0, Y0);
+    // XMVECTOR Q1 = XMVectorMultiply(P1, Sign.v);
+    // Q1 = XMVectorMultiply(Q1, Y1);
+    // XMVECTOR Q2 = XMVectorMultiply(P2, Y2);
+    // Q2 = XMVectorMultiplyAdd(Q2, P3, Q1);
+
+    // XMVECTOR V0 = XMVectorPermute<XM_PERMUTE_1X, XM_PERMUTE_0Y, XM_PERMUTE_1Z, XM_PERMUTE_0W>(Q0, Q2);
+    // XMVECTOR V1 = XMVectorPermute<XM_PERMUTE_1Y, XM_PERMUTE_0Z, XM_PERMUTE_1W, XM_PERMUTE_0W>(Q0, Q2);
+    // XMVECTOR V2 = XMVectorPermute<XM_PERMUTE_0X, XM_PERMUTE_1X, XM_PERMUTE_0W, XM_PERMUTE_0W>(Q0, NS);
+
+    // XMMATRIX M;
+    // M.r[0] = XMVectorSelect(g_XMZero, V0, g_XMSelect1110.v);
+    // M.r[1] = XMVectorSelect(g_XMZero, V1, g_XMSelect1110.v);
+    // M.r[2] = XMVectorSelect(g_XMZero, V2, g_XMSelect1110.v);
+    // M.r[3] = g_XMIdentityR3;
+    // return M;
 
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented

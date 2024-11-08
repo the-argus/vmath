@@ -75,6 +75,7 @@ const vm_floatinit_v4f vm_v4_coscoeff_0 = {
 	{-0.5F, +0.041666638F, -0.0013888378F, +2.4760495e-05F}};
 const vm_floatinit_v4f vm_v4_coscoeff_1 = {
 	{-2.6051615e-07F, -0.49992746F, +0.041493919F, -0.0012712436F}};
+const vm_floatinit_v4f vm_v4_pitchyawroll_signs = {{1.0F, -1.0F, -1.0F, 1.0F}};
 
 const vm_floatinit_v4f vm_mat4x4_iden_row0 = {{1.0F, 0.0F, 0.0F, 0.0F}};
 const vm_floatinit_v4f vm_mat4x4_iden_row1 = {{0.0F, 1.0F, 0.0F, 0.0F}};

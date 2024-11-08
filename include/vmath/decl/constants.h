@@ -64,6 +64,7 @@ VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_sincoeff_0;
 VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_sincoeff_1;
 VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_coscoeff_0;
 VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_coscoeff_1;
+VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_pitchyawroll_signs;
 
 VMATH_EXTERN_CONST vm_floatinit_v4f vm_mat4x4_iden_row0;
 VMATH_EXTERN_CONST vm_floatinit_v4f vm_mat4x4_iden_row1;
