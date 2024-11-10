@@ -486,15 +486,43 @@ VMATH_INLINE vm_mat4x4f_t vm_load_translationv_mat4x4f(vm_v3f_t offset)
 {
 #if defined(VMATH_AVX512_GENERIC_ENABLE)
 
+	vm_mat4x4f_t matrix = vm_mat4x4_iden.vector_rep;
+	const __m128 r3 = vm_select_v4f(vm_mat4x4_iden_row3.vector_rep, offset,
+									vm_v4_selectmask_1110.vector_rep);
+	_mm512_insertf32x4(matrix, r3, 3);
+	return matrix;
+
 #elif defined(VMATH_AVX256_GENERIC_ENABLE)
 
+	vm_mat4x4f_t matrix;
+	matrix.buffer[0] = vm_mat4x4_iden_rows_0_and_1.vector_rep;
+	const __m128 r3 = vm_select_v4f(vm_mat4x4_iden_row3.vector_rep, offset,
+									vm_v4_selectmask_1110.vector_rep);
+	matrix.buffer[1] = _mm256_insertf128_ps(matrix.buffer[1], r3, 1);
+	return matrix;
+
 #elif defined(VMATH_SSE41_ENABLE)
+
+	vm_mat4x4f_t matrix;
+	matrix.buffer[0] = vm_mat4x4_iden_row0.vector_rep;
+	matrix.buffer[1] = vm_mat4x4_iden_row1.vector_rep;
+	matrix.buffer[2] = vm_mat4x4_iden_row2.vector_rep;
+	matrix.buffer[3] = vm_select_v4f(vm_mat4x4_iden_row3.vector_rep, offset,
+									 vm_v4_selectmask_1110.vector_rep);
+	return matrix;
 
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
+
+	vm_mat4x4f_t matrix;
+	matrix._inner = vm_loadb_v16f(vm_mat4x4_iden.float_rep);
+	matrix._inner.buffer[12] = offset._inner.x;
+	matrix._inner.buffer[13] = offset._inner.y;
+	matrix._inner.buffer[14] = offset._inner.z;
+	return matrix;
 
 #endif
 }
@@ -512,13 +540,49 @@ VMATH_INLINE vm_mat4x4f_t vm_load_scalev_mat4x4f(vm_v3f_t scale)
 
 #elif defined(VMATH_AVX256_GENERIC_ENABLE)
 
+    vm_mat4x4f_t matrix;
+	matrix.buffer[0] = _mm_and_ps(scale, vm_v4_selectmask_1000.vector_rep);
+	matrix.buffer[1] = _mm_and_ps(scale, vm_v4_selectmask_0100.vector_rep);
+	matrix.buffer[2] = _mm_and_ps(scale, vm_v4_selectmask_0010.vector_rep);
+	matrix.buffer[3] = vm_mat4x4_iden_row3.vector_rep;
+	return matrix;
+
 #elif defined(VMATH_SSE41_ENABLE)
+
+	vm_mat4x4f_t matrix;
+	matrix.buffer[0] = _mm_and_ps(scale, vm_v4_selectmask_1000.vector_rep);
+	matrix.buffer[1] = _mm_and_ps(scale, vm_v4_selectmask_0100.vector_rep);
+	matrix.buffer[2] = _mm_and_ps(scale, vm_v4_selectmask_0010.vector_rep);
+	matrix.buffer[3] = vm_mat4x4_iden_row3.vector_rep;
+	return matrix;
 
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
+
+	vm_mat4x4f_t matrix;
+	matrix._inner.buffer[0] = scale._inner.x;
+	matrix._inner.buffer[1] = 0.0F;
+	matrix._inner.buffer[2] = 0.0F;
+	matrix._inner.buffer[3] = 0.0F;
+
+	matrix._inner.buffer[4] = 0.0F;
+	matrix._inner.buffer[5] = scale._inner.y;
+	matrix._inner.buffer[6] = 0.0F;
+	matrix._inner.buffer[7] = 0.0F;
+
+	matrix._inner.buffer[8] = 0.0F;
+	matrix._inner.buffer[9] = 0.0F;
+	matrix._inner.buffer[10] = scale._inner.z;
+	matrix._inner.buffer[11] = 0.0F;
+
+	matrix._inner.buffer[12] = 0.0F;
+	matrix._inner.buffer[13] = 0.0F;
+	matrix._inner.buffer[14] = 0.0F;
+	matrix._inner.buffer[15] = 1.0F;
+	return matrix;
 
 #endif
 }
