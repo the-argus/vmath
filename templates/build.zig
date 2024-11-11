@@ -109,7 +109,7 @@ fn generateCode(step: *std.Build.Step, prog_node: std.Progress.Node) anyerror!vo
     // generate selectmasks
     {
         const generator = @import("selectmask_gen.zig");
-        const widths = [_]u64{ 4, 8, 16 };
+        const widths = [_]u64{ 4, 8 };
         {
             const out_file = try output_dir.createFile("selectmask_decls.h", .{});
             defer out_file.close();
