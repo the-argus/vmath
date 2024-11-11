@@ -537,14 +537,30 @@ VMATH_INLINE vm_mat4x4f_t vm_load_scale_mat4x4f(vm_float32_t x, vm_float32_t y,
 VMATH_INLINE vm_mat4x4f_t vm_load_scalev_mat4x4f(vm_v3f_t scale)
 {
 #if defined(VMATH_AVX512_GENERIC_ENABLE)
+	vm_mat4x4f_t matrix;
+	const __m128 r0 = _mm_and_ps(scale, vm_v4_selectmask_1000.vector_rep);
+	const __m128 r1 = _mm_and_ps(scale, vm_v4_selectmask_0100.vector_rep);
+	const __m128 r2 = _mm_and_ps(scale, vm_v4_selectmask_0010.vector_rep);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wuninitialized"
+	matrix = _mm512_insertf32x4(matrix, r0, 0);
+#pragma clang diagnostic pop
+	matrix = _mm512_insertf32x4(matrix, r1, 1);
+	matrix = _mm512_insertf32x4(matrix, r2, 2);
+	matrix = _mm512_insertf32x4(matrix, vm_mat4x4_iden_row3.vector_rep, 3);
+	return matrix;
 
 #elif defined(VMATH_AVX256_GENERIC_ENABLE)
 
-    vm_mat4x4f_t matrix;
-	matrix.buffer[0] = _mm_and_ps(scale, vm_v4_selectmask_1000.vector_rep);
-	matrix.buffer[1] = _mm_and_ps(scale, vm_v4_selectmask_0100.vector_rep);
-	matrix.buffer[2] = _mm_and_ps(scale, vm_v4_selectmask_0010.vector_rep);
-	matrix.buffer[3] = vm_mat4x4_iden_row3.vector_rep;
+	vm_mat4x4f_t matrix;
+	const __m128 r0 = _mm_and_ps(scale, vm_v4_selectmask_1000.vector_rep);
+	const __m128 r1 = _mm_and_ps(scale, vm_v4_selectmask_0100.vector_rep);
+	const __m128 r2 = _mm_and_ps(scale, vm_v4_selectmask_0010.vector_rep);
+	matrix.buffer[0] = _mm256_insertf128_ps(matrix.buffer[0], r0, 0);
+	matrix.buffer[0] = _mm256_insertf128_ps(matrix.buffer[0], r1, 1);
+	matrix.buffer[1] = _mm256_insertf128_ps(matrix.buffer[1], r2, 0);
+	matrix.buffer[1] = _mm256_insertf128_ps(matrix.buffer[1],
+											vm_mat4x4_iden_row3.vector_rep, 0);
 	return matrix;
 
 #elif defined(VMATH_SSE41_ENABLE)
