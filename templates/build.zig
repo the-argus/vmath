@@ -108,20 +108,25 @@ fn generateCode(step: *std.Build.Step, prog_node: std.Progress.Node) anyerror!vo
 
     // generate selectmasks
     {
-        const selectmask_gen_v8 = @import("selectmask_gen_v8.zig");
+        const generator = @import("selectmask_gen.zig");
+        const widths = [_]u64{ 4, 8, 16 };
         {
-            const out_file = try output_dir.createFile(selectmask_gen_v8.h_filename, .{});
+            const out_file = try output_dir.createFile("selectmask_decls.h", .{});
             defer out_file.close();
-            const contents = try selectmask_gen_v8.hFileContents(step.owner.allocator);
-            defer step.owner.allocator.free(contents);
-            _ = try out_file.write(contents);
+            for (widths) |width| {
+                const contents = try generator.generateDeclsForBinaryNumberOfSize(step.owner.allocator, width);
+                defer step.owner.allocator.free(contents);
+                _ = try out_file.write(contents);
+            }
         }
         {
-            const out_file = try output_dir.createFile(selectmask_gen_v8.impl_filename, .{});
+            const out_file = try output_dir.createFile("selectmask_impl.h", .{});
             defer out_file.close();
-            const contents = try selectmask_gen_v8.implFileContents(step.owner.allocator);
-            defer step.owner.allocator.free(contents);
-            _ = try out_file.write(contents);
+            for (widths) |width| {
+                const contents = try generator.generateImplForBinaryNumberOfSize(step.owner.allocator, width);
+                defer step.owner.allocator.free(contents);
+                _ = try out_file.write(contents);
+            }
         }
     }
 
