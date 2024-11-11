@@ -3,14 +3,6 @@
  * just extern inline definitions to prevent ODR violation
  */
 #define VMATH_USE_EXTERN_INLINE
-#include "vmath/decl/mat3x3_f32.h"
-#include "vmath/decl/mat4x4_f32.h"
-#include "vmath/decl/transform2d_f32.h"
-#include "vmath/decl/vec16_f32.h"
-#include "vmath/decl/vec2_f32.h"
-#include "vmath/decl/vec3_f32.h"
-#include "vmath/decl/vec4_f32.h"
-#include "vmath/decl/vec8_f32.h"
 
 #include "vmath/decl/constants.h"
 
@@ -82,24 +74,7 @@ const vm_floatinit_v4f vm_mat4x4_iden_row1 = {{0.0F, 1.0F, 0.0F, 0.0F}};
 const vm_floatinit_v4f vm_mat4x4_iden_row2 = {{0.0F, 0.0F, 1.0F, 0.0F}};
 const vm_floatinit_v4f vm_mat4x4_iden_row3 = {{0.0F, 0.0F, 0.0F, 1.0F}};
 
-// clang-format off
-const vm_uintinit_v4f vm_v4_selectmask_0000 = {{0,          0,          0,          0}};
-const vm_uintinit_v4f vm_v4_selectmask_0001 = {{0,          0,          0,          0xFFFFFFFF}};
-const vm_uintinit_v4f vm_v4_selectmask_0010 = {{0,          0,          0xFFFFFFFF, 0}};
-const vm_uintinit_v4f vm_v4_selectmask_0011 = {{0,          0,          0xFFFFFFFF, 0xFFFFFFFF}};
-const vm_uintinit_v4f vm_v4_selectmask_0100 = {{0,          0xFFFFFFFF, 0,          0}};
-const vm_uintinit_v4f vm_v4_selectmask_0101 = {{0,          0xFFFFFFFF, 0,          0xFFFFFFFF}};
-const vm_uintinit_v4f vm_v4_selectmask_0110 = {{0,          0xFFFFFFFF, 0xFFFFFFFF, 0}};
-const vm_uintinit_v4f vm_v4_selectmask_0111 = {{0,          0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF}};
-const vm_uintinit_v4f vm_v4_selectmask_1000 = {{0xFFFFFFFF, 0,          0,          0}};
-const vm_uintinit_v4f vm_v4_selectmask_1001 = {{0xFFFFFFFF, 0,          0,          0xFFFFFFFF}};
-const vm_uintinit_v4f vm_v4_selectmask_1010 = {{0xFFFFFFFF, 0,          0xFFFFFFFF, 0}};
-const vm_uintinit_v4f vm_v4_selectmask_1011 = {{0xFFFFFFFF, 0,          0xFFFFFFFF, 0xFFFFFFFF}};
-const vm_uintinit_v4f vm_v4_selectmask_1100 = {{0xFFFFFFFF, 0xFFFFFFFF, 0,          0}};
-const vm_uintinit_v4f vm_v4_selectmask_1101 = {{0xFFFFFFFF, 0xFFFFFFFF, 0,          0xFFFFFFFF}};
-const vm_uintinit_v4f vm_v4_selectmask_1110 = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}};
-const vm_uintinit_v4f vm_v4_selectmask_1111 = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF}};
-// clang-format on
+#include "vmath/generated/selectmask_impl.h"
 
 const vm_floatinit_v4f vm_negate_x = {{-1.F, 1.F, 1.F, 1.F}};
 const vm_floatinit_v4f vm_negate_y = {{1.F, -1.F, 1.F, 1.F}};

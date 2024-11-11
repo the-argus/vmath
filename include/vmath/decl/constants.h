@@ -43,6 +43,14 @@ union vm_uintinit_v4f
 };
 typedef union vm_uintinit_v4f vm_uintinit_v4f;
 
+union vm_uintinit_v8f
+{
+	uint32_t uint_rep[8];
+	vm_float32_t float_rep[8];
+	vm_v8f_t vector_rep;
+};
+typedef union vm_uintinit_v8f vm_uintinit_v8f;
+
 #define VMATH_PI (3.141592654F)
 #define VMATH_2PI (6.283185307F)
 #define VMATH_1DIVPI (0.318309886F)
@@ -66,22 +74,7 @@ VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_coscoeff_0;
 VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_coscoeff_1;
 VMATH_EXTERN_CONST vm_floatinit_v4f vm_v4_pitchyawroll_signs;
 
-VMATH_EXTERN_CONST vm_uintinit_v4f vm_v4_selectmask_0000;
-VMATH_EXTERN_CONST vm_uintinit_v4f vm_v4_selectmask_0001;
-VMATH_EXTERN_CONST vm_uintinit_v4f vm_v4_selectmask_0010;
-VMATH_EXTERN_CONST vm_uintinit_v4f vm_v4_selectmask_0011;
-VMATH_EXTERN_CONST vm_uintinit_v4f vm_v4_selectmask_0100;
-VMATH_EXTERN_CONST vm_uintinit_v4f vm_v4_selectmask_0101;
-VMATH_EXTERN_CONST vm_uintinit_v4f vm_v4_selectmask_0110;
-VMATH_EXTERN_CONST vm_uintinit_v4f vm_v4_selectmask_0111;
-VMATH_EXTERN_CONST vm_uintinit_v4f vm_v4_selectmask_1000;
-VMATH_EXTERN_CONST vm_uintinit_v4f vm_v4_selectmask_1001;
-VMATH_EXTERN_CONST vm_uintinit_v4f vm_v4_selectmask_1010;
-VMATH_EXTERN_CONST vm_uintinit_v4f vm_v4_selectmask_1011;
-VMATH_EXTERN_CONST vm_uintinit_v4f vm_v4_selectmask_1100;
-VMATH_EXTERN_CONST vm_uintinit_v4f vm_v4_selectmask_1101;
-VMATH_EXTERN_CONST vm_uintinit_v4f vm_v4_selectmask_1110;
-VMATH_EXTERN_CONST vm_uintinit_v4f vm_v4_selectmask_1111;
+#include "vmath/generated/selectmask_decls.h"
 
 VMATH_EXTERN_CONST vm_floatinit_v4f vm_mat4x4_iden_row0;
 VMATH_EXTERN_CONST vm_floatinit_v4f vm_mat4x4_iden_row1;
