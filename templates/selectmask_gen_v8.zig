@@ -1,6 +1,6 @@
 const std = @import("std");
-const h_filename = "selectmask_decls.h";
-const impl_filename = "selectmask_impl.h";
+pub const h_filename = "selectmask_decls.h";
+pub const impl_filename = "selectmask_impl.h";
 
 const generator = @import("selectmask_gen.zig");
 

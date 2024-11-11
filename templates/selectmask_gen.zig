@@ -12,7 +12,8 @@ fn replace4With(allocator: std.mem.Allocator, size: u64, str: []const u8) ![]u8 
         if (char != '4') {
             try builder.append(char);
         } else {
-            try builder.append('0' + size);
+            const offset: u8 = @intCast(size);
+            try builder.append('0' + offset);
         }
     }
     return builder.toOwnedSlice();
@@ -34,7 +35,7 @@ pub fn generateDeclsForBinaryNumberOfSize(allocator: std.mem.Allocator, size: u6
 
     for (0..size) |index| {
         try builder.appendSlice(decl_begin);
-        try std.fmt.bufPrint(binary_number_scratch, "{b}", .{index});
+        _ = try std.fmt.bufPrint(binary_number_scratch, "{b}", .{index});
         try builder.appendSlice(binary_number_scratch);
         try builder.appendSlice(";\n");
     }
@@ -54,15 +55,18 @@ pub fn generateImplForBinaryNumberOfSize(allocator: std.mem.Allocator, size: u64
 
     for (0..size) |index| {
         try builder.appendSlice(impl_begin);
-        try std.fmt.bufPrint(binary_number_scratch, "{b}", .{index});
+        @memset(binary_number_scratch, 0);
+        _ = try std.fmt.bufPrint(binary_number_scratch, "{b}", .{index});
         try builder.appendSlice(binary_number_scratch);
         try builder.appendSlice(" = {{");
 
         for (binary_number_scratch) |digit| {
             switch (digit) {
-                '0' => try builder.appendSlice("0,"),
+                '0', 0 => try builder.appendSlice("0,"),
                 '1' => try builder.appendSlice("0xFFFFFFFF,"),
-                _ => @panic("bad binary print"),
+                else => {
+                    @panic("bad binary print");
+                },
             }
         }
 

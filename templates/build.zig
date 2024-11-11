@@ -110,18 +110,18 @@ fn generateCode(step: *std.Build.Step, prog_node: std.Progress.Node) anyerror!vo
     {
         const selectmask_gen_v8 = @import("selectmask_gen_v8.zig");
         {
-            const out_file = output_dir.createFile(selectmask_gen_v8.h_filename, .{});
+            const out_file = try output_dir.createFile(selectmask_gen_v8.h_filename, .{});
             defer out_file.close();
             const contents = try selectmask_gen_v8.hFileContents(step.owner.allocator);
             defer step.owner.allocator.free(contents);
-            try out_file.write(contents);
+            _ = try out_file.write(contents);
         }
         {
-            const out_file = output_dir.createFile(selectmask_gen_v8.impl_filename, .{});
+            const out_file = try output_dir.createFile(selectmask_gen_v8.impl_filename, .{});
             defer out_file.close();
             const contents = try selectmask_gen_v8.implFileContents(step.owner.allocator);
             defer step.owner.allocator.free(contents);
-            try out_file.write(contents);
+            _ = try out_file.write(contents);
         }
     }
 
