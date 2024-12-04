@@ -606,10 +606,137 @@ VMATH_INLINE vm_mat4x4f_t vm_load_scalev_mat4x4f(vm_v3f_t scale)
 VMATH_INLINE vm_mat4x4f_t vm_mul_mat4x4f(vm_mat4x4f_t a, vm_mat4x4f_t b)
 {
 #if defined(VMATH_AVX512_GENERIC_ENABLE)
+#error "AVX512 not implemented for matrix multiplication"
 
 #elif defined(VMATH_AVX256_GENERIC_ENABLE)
 
+	__m256 t0 = a.buffer[0];
+	__m256 t1 = a.buffer[1];
+
+	__m256 u0 = b.buffer[0];
+	__m256 u1 = b.buffer[1];
+
+	__m256 a0 = _mm256_shuffle_ps(t0, t0, _MM_SHUFFLE(0, 0, 0, 0)); // NOLINT
+	__m256 a1 = _mm256_shuffle_ps(t1, t1, _MM_SHUFFLE(0, 0, 0, 0)); // NOLINT
+	__m256 b0 = _mm256_permute2f128_ps(u0, u0, 0x00);
+	__m256 c0 = _mm256_mul_ps(a0, b0);
+	__m256 c1 = _mm256_mul_ps(a1, b0);
+
+	a0 = _mm256_shuffle_ps(t0, t0, _MM_SHUFFLE(1, 1, 1, 1)); // NOLINT
+	a1 = _mm256_shuffle_ps(t1, t1, _MM_SHUFFLE(1, 1, 1, 1)); // NOLINT
+	b0 = _mm256_permute2f128_ps(u0, u0, 0x11);
+	__m256 c2 = _mm256_fmadd_ps(a0, b0, c0);
+	__m256 c3 = _mm256_fmadd_ps(a1, b0, c1);
+
+	a0 = _mm256_shuffle_ps(t0, t0, _MM_SHUFFLE(2, 2, 2, 2)); // NOLINT
+	a1 = _mm256_shuffle_ps(t1, t1, _MM_SHUFFLE(2, 2, 2, 2)); // NOLINT
+	__m256 b1 = _mm256_permute2f128_ps(u1, u1, 0x00);
+	__m256 c4 = _mm256_mul_ps(a0, b1);
+	__m256 c5 = _mm256_mul_ps(a1, b1);
+
+	a0 = _mm256_shuffle_ps(t0, t0, _MM_SHUFFLE(3, 3, 3, 3)); // NOLINT
+	a1 = _mm256_shuffle_ps(t1, t1, _MM_SHUFFLE(3, 3, 3, 3)); // NOLINT
+	b1 = _mm256_permute2f128_ps(u1, u1, 0x11);
+	__m256 c6 = _mm256_fmadd_ps(a0, b1, c4);
+	__m256 c7 = _mm256_fmadd_ps(a1, b1, c5);
+
+	t0 = _mm256_add_ps(c2, c6);
+	t1 = _mm256_add_ps(c3, c7);
+
+	vm_mat4x4f_t out;
+	out.buffer[0] = t0;
+	out.buffer[1] = t1;
+	return out;
+
 #elif defined(VMATH_SSE41_ENABLE)
+
+	vm_mat4x4f_t out;
+	// Splat the component X,Y,Z then W
+#if defined(VMATH_AVX_ENABLE)
+	__m128 vX = _mm_broadcast_ss((const float*)(&a.buffer[0]) + 0);
+	__m128 vY = _mm_broadcast_ss((const float*)(&a.buffer[0]) + 1);
+	__m128 vZ = _mm_broadcast_ss((const float*)(&a.buffer[0]) + 2);
+	__m128 vW = _mm_broadcast_ss((const float*)(&a.buffer[0]) + 3);
+#else
+	// Use vW to hold the original row
+	__m128 vW = a.buffer[0];
+	__m128 vX = _mm_permute_ps(vW, _MM_SHUFFLE(0, 0, 0, 0)); // NOLINT
+	__m128 vY = _mm_permute_ps(vW, _MM_SHUFFLE(1, 1, 1, 1)); // NOLINT
+	__m128 vZ = _mm_permute_ps(vW, _MM_SHUFFLE(2, 2, 2, 2)); // NOLINT
+	vW = _mm_permute_ps(vW, _MM_SHUFFLE(3, 3, 3, 3));		 // NOLINT
+#endif
+	// Perform the operation on the first row
+	vX = _mm_mul_ps(vX, b.buffer[0]);
+	vY = _mm_mul_ps(vY, b.buffer[1]);
+	vZ = _mm_mul_ps(vZ, b.buffer[2]);
+	vW = _mm_mul_ps(vW, b.buffer[3]);
+	// Perform a binary add to reduce cumulative errors
+	vX = _mm_add_ps(vX, vZ);
+	vY = _mm_add_ps(vY, vW);
+	vX = _mm_add_ps(vX, vY);
+	out.buffer[0] = vX;
+	// Repeat for the other 3 rows
+#if defined(VMATH_AVX_ENABLE)
+	vX = _mm_broadcast_ss((const float*)(&a.buffer[1]) + 0);
+	vY = _mm_broadcast_ss((const float*)(&a.buffer[1]) + 1);
+	vZ = _mm_broadcast_ss((const float*)(&a.buffer[1]) + 2);
+	vW = _mm_broadcast_ss((const float*)(&a.buffer[1]) + 3);
+#else
+	vW = a.buffer[1];
+	vX = _mm_permute_ps(vW, _MM_SHUFFLE(0, 0, 0, 0)); // NOLINT
+	vY = _mm_permute_ps(vW, _MM_SHUFFLE(1, 1, 1, 1)); // NOLINT
+	vZ = _mm_permute_ps(vW, _MM_SHUFFLE(2, 2, 2, 2)); // NOLINT
+	vW = _mm_permute_ps(vW, _MM_SHUFFLE(3, 3, 3, 3)); // NOLINT
+#endif
+	vX = _mm_mul_ps(vX, b.buffer[0]);
+	vY = _mm_mul_ps(vY, b.buffer[1]);
+	vZ = _mm_mul_ps(vZ, b.buffer[2]);
+	vW = _mm_mul_ps(vW, b.buffer[3]);
+	vX = _mm_add_ps(vX, vZ);
+	vY = _mm_add_ps(vY, vW);
+	vX = _mm_add_ps(vX, vY);
+	out.buffer[1] = vX;
+#if defined(VMATH_AVX_ENABLE)
+	vX = _mm_broadcast_ss((const float*)(&a.buffer[2]) + 0);
+	vY = _mm_broadcast_ss((const float*)(&a.buffer[2]) + 1);
+	vZ = _mm_broadcast_ss((const float*)(&a.buffer[2]) + 2);
+	vW = _mm_broadcast_ss((const float*)(&a.buffer[2]) + 3);
+#else
+	vW = a.buffer[2];
+	vX = _mm_permute_ps(vW, _MM_SHUFFLE(0, 0, 0, 0)); // NOLINT
+	vY = _mm_permute_ps(vW, _MM_SHUFFLE(1, 1, 1, 1)); // NOLINT
+	vZ = _mm_permute_ps(vW, _MM_SHUFFLE(2, 2, 2, 2)); // NOLINT
+	vW = _mm_permute_ps(vW, _MM_SHUFFLE(3, 3, 3, 3)); // NOLINT
+#endif
+	vX = _mm_mul_ps(vX, b.buffer[0]);
+	vY = _mm_mul_ps(vY, b.buffer[1]);
+	vZ = _mm_mul_ps(vZ, b.buffer[2]);
+	vW = _mm_mul_ps(vW, b.buffer[3]);
+	vX = _mm_add_ps(vX, vZ);
+	vY = _mm_add_ps(vY, vW);
+	vX = _mm_add_ps(vX, vY);
+	out.buffer[2] = vX;
+#if defined(VMATH_AVX_ENABLE)
+	vX = _mm_broadcast_ss((const float*)(&a.buffer[3]) + 0);
+	vY = _mm_broadcast_ss((const float*)(&a.buffer[3]) + 1);
+	vZ = _mm_broadcast_ss((const float*)(&a.buffer[3]) + 2);
+	vW = _mm_broadcast_ss((const float*)(&a.buffer[3]) + 3);
+#else
+	vW = a.buffer[3];
+	vX = _mm_permute_ps(vW, _MM_SHUFFLE(0, 0, 0, 0)); // NOLINT
+	vY = _mm_permute_ps(vW, _MM_SHUFFLE(1, 1, 1, 1)); // NOLINT
+	vZ = _mm_permute_ps(vW, _MM_SHUFFLE(2, 2, 2, 2)); // NOLINT
+	vW = _mm_permute_ps(vW, _MM_SHUFFLE(3, 3, 3, 3)); // NOLINT
+#endif
+	vX = _mm_mul_ps(vX, b.buffer[0]);
+	vY = _mm_mul_ps(vY, b.buffer[1]);
+	vZ = _mm_mul_ps(vZ, b.buffer[2]);
+	vW = _mm_mul_ps(vW, b.buffer[3]);
+	vX = _mm_add_ps(vX, vZ);
+	vY = _mm_add_ps(vY, vW);
+	vX = _mm_add_ps(vX, vY);
+	out.buffer[3] = vX;
+	return out;
 
 #elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
 #error ARM SIMD not implemented
@@ -617,12 +744,51 @@ VMATH_INLINE vm_mat4x4f_t vm_mul_mat4x4f(vm_mat4x4f_t a, vm_mat4x4f_t b)
 #error RISCV vector extensions not implemented
 #else
 
+	vm_mat4x4f_t matrix;
+	vm_float32_t x = a._inner.buffer[0];
+	vm_float32_t y = a._inner.buffer[1];
+	vm_float32_t z = a._inner.buffer[2];
+	vm_float32_t w = a._inner.buffer[3];
+	// clang-format off
+    matrix._inner.buffer[0] = (b._inner.buffer[0] * x) + (b._inner.buffer[4] * y) + (b._inner.buffer[8] * z) + (b._inner.buffer[12] * w);
+    matrix._inner.buffer[1] = (b._inner.buffer[1] * x) + (b._inner.buffer[5] * y) + (b._inner.buffer[9] * z) + (b._inner.buffer[13] * w);
+    matrix._inner.buffer[2] = (b._inner.buffer[2] * x) + (b._inner.buffer[6] * y) + (b._inner.buffer[10] * z) + (b._inner.buffer[14] * w);
+    matrix._inner.buffer[3] = (b._inner.buffer[3] * x) + (b._inner.buffer[7] * y) + (b._inner.buffer[11] * z) + (b._inner.buffer[15] * w);
+    x = a._inner.buffer[4];
+    y = a._inner.buffer[5];
+    z = a._inner.buffer[6];
+    w = a._inner.buffer[7];
+    matrix._inner.buffer[4] = (b._inner.buffer[0] * x) + (b._inner.buffer[4] * y) + (b._inner.buffer[8] * z) + (b._inner.buffer[12] * w);
+    matrix._inner.buffer[5] = (b._inner.buffer[1] * x) + (b._inner.buffer[5] * y) + (b._inner.buffer[9] * z) + (b._inner.buffer[13] * w);
+    matrix._inner.buffer[6] = (b._inner.buffer[2] * x) + (b._inner.buffer[6] * y) + (b._inner.buffer[10] * z) + (b._inner.buffer[14] * w);
+    matrix._inner.buffer[7] = (b._inner.buffer[3] * x) + (b._inner.buffer[7] * y) + (b._inner.buffer[11] * z) + (b._inner.buffer[15] * w);
+    x = a._inner.buffer[8];
+    y = a._inner.buffer[9];
+    z = a._inner.buffer[10];
+    w = a._inner.buffer[11];
+    matrix._inner.buffer[8] = (b._inner.buffer[0] * x) + (b._inner.buffer[4] * y) + (b._inner.buffer[8] * z) + (b._inner.buffer[12] * w);
+    matrix._inner.buffer[9] = (b._inner.buffer[1] * x) + (b._inner.buffer[5] * y) + (b._inner.buffer[9] * z) + (b._inner.buffer[13] * w);
+    matrix._inner.buffer[10] = (b._inner.buffer[2] * x) + (b._inner.buffer[6] * y) + (b._inner.buffer[10] * z) + (b._inner.buffer[14] * w);
+    matrix._inner.buffer[11] = (b._inner.buffer[3] * x) + (b._inner.buffer[7] * y) + (b._inner.buffer[11] * z) + (b._inner.buffer[15] * w);
+    x = a._inner.buffer[12];
+    y = a._inner.buffer[13];
+    z = a._inner.buffer[14];
+    w = a._inner.buffer[15];
+    matrix._inner.buffer[12] = (b._inner.buffer[0] * x) + (b._inner.buffer[4] * y) + (b._inner.buffer[8] * z) + (b._inner.buffer[12] * w);
+    matrix._inner.buffer[13] = (b._inner.buffer[1] * x) + (b._inner.buffer[5] * y) + (b._inner.buffer[9] * z) + (b._inner.buffer[13] * w);
+    matrix._inner.buffer[14] = (b._inner.buffer[2] * x) + (b._inner.buffer[6] * y) + (b._inner.buffer[10] * z) + (b._inner.buffer[14] * w);
+    matrix._inner.buffer[15] = (b._inner.buffer[3] * x) + (b._inner.buffer[7] * y) + (b._inner.buffer[11] * z) + (b._inner.buffer[15] * w);
+	// clang-format on
+	return matrix;
+
 #endif
 }
 
 VMATH_INLINE vm_v3f_t vm_transform_mat4x4_v3f(vm_v3f_t vec,
 											  vm_mat4x4f_t transform)
 {
+	abort(); // TODO: implement this
+	return vm_load_v3f(&(vm_v3fs_t){.x = 0, .y = 0, .z = 0});
 #if defined(VMATH_AVX512_GENERIC_ENABLE)
 
 #elif defined(VMATH_AVX256_GENERIC_ENABLE)
@@ -634,7 +800,6 @@ VMATH_INLINE vm_v3f_t vm_transform_mat4x4_v3f(vm_v3f_t vec,
 #elif defined(VMATH_RISCV_V1_ENABLE)
 #error RISCV vector extensions not implemented
 #else
-
 #endif
 }
 
