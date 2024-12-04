@@ -78,12 +78,12 @@ VMATH_INLINE vm_v2f_t vm_splat_v2f(vm_float32_t fill)
 
 VMATH_INLINE vm_v2f_t vm_load_ones_v2f(void)
 {
-	return vm_shave4_v2f(vm_v4_ones.vector_rep);
+	return vm_shave4_v2f(vm_v4_one.vector_rep);
 }
 
 VMATH_INLINE vm_v2f_t vm_load_zeroes_v2f(void)
 {
-	return vm_shave4_v2f(vm_v4_zeroes.vector_rep);
+	return vm_shave4_v2f(vm_v4_zero.vector_rep);
 }
 
 /*
@@ -301,7 +301,7 @@ VMATH_INLINE vm_v2f_t vm_angle_v2f(vm_v2f_t vec1, vm_v2f_t vec2)
 	assert(0);
 }
 
-VMATH_INLINE vm_v2f_t vm_normalize_v2f(vm_v2f_t vec) {}
+VMATH_INLINE vm_v2f_t vm_normalize_v2f(vm_v2f_t vec) { assert(0); }
 
 VMATH_INLINE vm_v2f_t vm_lerp_v2f(vm_v2f_t vec1, vm_v2f_t vec2,
 								  vm_v2f_t amount);

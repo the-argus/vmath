@@ -18,6 +18,7 @@ const lib_flags = &[_][]const u8{
 const test_flags = lib_flags[0..(lib_flags.len - 1)];
 
 const test_source_files = &[_][]const u8{
+    "scalar.c",
     "vec2_f32.c",
     "vec4_f32.c",
     "vec8_f32.c",

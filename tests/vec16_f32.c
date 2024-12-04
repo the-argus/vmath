@@ -109,6 +109,7 @@ START_TEST(splat)
 		}
 	}
 }
+END_TEST
 
 Suite* vector4_f32_suite(void)
 {

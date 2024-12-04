@@ -132,9 +132,40 @@ VMATH_INLINE vm_v4f_t vm_negative_multiply_subtract_v4f(vm_v4f_t mul1,
 VMATH_INLINE vm_v4f_t vm_select_v4f(const vm_v4f_t a, const vm_v4f_t b,
 									const vm_v4f_t mask)
 {
+#if defined(VMATH_SSE41_ENABLE)
 	const __m128 masked_a = _mm_andnot_ps(mask, a);
 	const __m128 masked_b = _mm_and_ps(mask, b);
 	return _mm_or_ps(masked_a, masked_b);
+#elif defined(VMATH_ARM_ENABLE) || defined(VMATH_ARM64_ENABLE)
+#error ARM SIMD not implemented
+#elif defined(VMATH_RISCV_V1_ENABLE)
+#error RISCV vector extensions not implemented
+#else
+	// TODO: how UB is this
+	uint32_t masked_a[4];
+	masked_a[0] = ~(*(uint32_t*)(&mask._inner.x));
+	masked_a[1] = ~(*(uint32_t*)(&mask._inner.y));
+	masked_a[2] = ~(*(uint32_t*)(&mask._inner.z));
+	masked_a[3] = ~(*(uint32_t*)(&mask._inner.w));
+
+	masked_a[0] &= *((uint32_t*)&a._inner.x);
+	masked_a[1] &= *((uint32_t*)&a._inner.y);
+	masked_a[2] &= *((uint32_t*)&a._inner.z);
+	masked_a[3] &= *((uint32_t*)&a._inner.w);
+
+	uint32_t masked_b[4];
+	masked_b[0] = *(uint32_t*)(&mask._inner.x) & *(uint32_t*)(&b._inner.x);
+	masked_b[1] = *(uint32_t*)(&mask._inner.y) & *(uint32_t*)(&b._inner.y);
+	masked_b[2] = *(uint32_t*)(&mask._inner.z) & *(uint32_t*)(&b._inner.z);
+	masked_b[3] = *(uint32_t*)(&mask._inner.w) & *(uint32_t*)(&b._inner.w);
+
+	masked_a[0] |= masked_b[0];
+	masked_a[1] |= masked_b[1];
+	masked_a[2] |= masked_b[2];
+	masked_a[3] |= masked_b[3];
+
+	return *(vm_v4f_t*)masked_a;
+#endif
 }
 
 #endif

@@ -13,9 +13,11 @@ VMATH_INLINE_DECL vm_float32_t vm_arccos(vm_float32_t value);
 VMATH_INLINE_DECL vm_float32_t vm_arcsin_est(vm_float32_t value);
 VMATH_INLINE_DECL vm_float32_t vm_arccos_est(vm_float32_t value);
 
-VMATH_INLINE_DECL void vm_sin_cos(float* out_sin, float* out_cos, float theta);
-VMATH_INLINE_DECL void vm_sin_cos_est(float* out_sin, float* out_cos,
-									  float theta);
+VMATH_INLINE_DECL void vm_sin_cos(vm_float32_t* out_sin, vm_float32_t* out_cos,
+								  vm_float32_t theta);
+VMATH_INLINE_DECL void vm_sin_cos_est(vm_float32_t* out_sin,
+									  vm_float32_t* out_cos,
+									  vm_float32_t theta);
 
 /// Round float to nearest int, preferring nearest even integer (banker's
 /// rounding)
